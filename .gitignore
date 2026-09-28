@@ -1,0 +1,12 @@
+# Dados, saídas e ambientes locais
+datasets/
+data/
+results/
+artifacts/
+metrics/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
