@@ -77,9 +77,9 @@
 #define MODEL_PATH              "/model_fedkd.nn"
 
 // ── Rede / MQTT (para fase 2 — federação real) ───────────────
-#define WIFI_SSID               "SUA_REDE"
-#define WIFI_PASSWORD           "SUA_SENHA"
-#define MQTT_BROKER             "192.168.1.100"   // IP do servidor/workstation
+#define WIFI_SSID               "CLARO_8EF8BC"
+#define WIFI_PASSWORD           "h7yhAHN#YT"
+#define MQTT_BROKER             "192.168.0.12"   // IP do servidor/workstation
 #define MQTT_PORT               1883
 #define CONNECTION_TIMEOUT      30000             // ms
 
@@ -89,13 +89,22 @@
 #define TOPIC_CMD_PULL          "fedkd/cmd/pull"
 #define TOPIC_CMD_PUSH          "fedkd/cmd/push/" CLIENT_NAME
 
+// ── Pinos UART — HLK-LD2410C ────────────────────────────────
+// Ligação recomendada: ESP32 GPIO16 (RX2) ↔ TX do sensor
+//                      ESP32 GPIO17 (TX2) ↔ RX do sensor
+#define LD2410C_RX_PIN          16      // GPIO16 = UART2 RX
+#define LD2410C_TX_PIN          17      // GPIO17 = UART2 TX
+#define LD2410C_BAUD            256000  // baud rate nativo do HLK-LD2410C
+#define WINDOW_INTERVAL_MS      100     // intervalo entre leituras do sensor (ms)
+                                        // T_WINDOW × WINDOW_INTERVAL_MS = 800 ms/janela
+
 // ── Watchdog / Temporização ──────────────────────────────────
 #define WDT_TIMEOUT_SEC         120   // segundos; treino pode demorar
 #define SERIAL_BAUD             115200
 
 // ── Flags de compilação ──────────────────────────────────────
 #define DATASET_BINARY 1      // usa trainModelFromBinaryDataset
-// #define ENABLE_MQTT    1   // descomente para habilitar MQTT (fase 2)
+ #define ENABLE_MQTT    1   // descomente para habilitar MQTT (fase 2)
 // #define SAVE_MODEL     1   // descomente para persistir modelo em flash
 
 #endif /* CONFIG_H_ */

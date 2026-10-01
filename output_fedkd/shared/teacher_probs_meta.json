@@ -1,7 +1,7 @@
 {
-  "n_pub": 4,
+  "n_pub": 80,
   "n_classes": 4,
   "temperature": 2.0,
   "bytes_per_row": 16,
-  "total_bytes": 64
+  "total_bytes": 1280
 }

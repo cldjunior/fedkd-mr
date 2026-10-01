@@ -76,7 +76,7 @@ CLIENT_ARCHITECTURES = {
 
 # ── Gerador sintético de janelas HLK-LD2410C ────────────────────────────────
 
-def generate_synthetic_windows(n_per_class: int) -> tuple:
+def generate_synthetic_windows(n_per_class: int, noise_scale: float = 1.0) -> tuple:
     """
     Gera n_per_class amostras por classe (total 4 × n_per_class) sem Excel.
 
@@ -90,90 +90,91 @@ def generate_synthetic_windows(n_per_class: int) -> tuple:
       STATIONARY:  distância estacionária > 0, energia alta, sem movimento
       APPROACHING: distância móvel decrescendo 300→50 cm ao longo dos 8 steps
       LEAVING:     distância móvel crescendo 50→300 cm ao longo dos 8 steps
+
+    noise_scale: multiplicador de ruído (1.0=padrão; 3.0=difícil, classes sobrepostas)
     """
     rng = np.random.RandomState(SEED)
     X_list, y_list = [], []
+    # σ base escalonado: noise_scale=1→fácil, noise_scale=3→classes sobrepostas
+    σ_base = 2.0 * noise_scale   # EMPTY baseline noise
+    σ_dyn  = 6.0 * noise_scale   # APPROACHING/LEAVING distance noise
+    σ_stat = 6.0 * noise_scale   # STATIONARY position noise
 
     for _ in range(n_per_class):
 
         # ── EMPTY ──────────────────────────────────────────────────────────
         # Sala vazia: todas as leituras perto de zero, sem alvo detectado.
-        # Ruído muito pequeno para garantir separação clara das outras classes.
         flat = []
         for _ in range(T_WINDOW):
-            md = float(np.clip(rng.normal(0, 2), 0, None))
-            me = float(np.clip(rng.normal(0, 2), 0, None))
-            sd = float(np.clip(rng.normal(0, 2), 0, None))
-            se = float(np.clip(rng.normal(0, 2), 0, None))
-            mg = [float(np.clip(rng.normal(0, 1), 0, None)) for _ in range(4)]
-            sg = [float(np.clip(rng.normal(0, 1), 0, None)) for _ in range(4)]
+            md = float(np.clip(rng.normal(0, σ_base), 0, None))
+            me = float(np.clip(rng.normal(0, σ_base), 0, None))
+            sd = float(np.clip(rng.normal(0, σ_base), 0, None))
+            se = float(np.clip(rng.normal(0, σ_base), 0, None))
+            mg = [float(np.clip(rng.normal(0, σ_base * 0.5), 0, None)) for _ in range(4)]
+            sg = [float(np.clip(rng.normal(0, σ_base * 0.5), 0, None)) for _ in range(4)]
             flat.extend([md, me, sd, se] + mg + sg)
         X_list.append(flat); y_list.append("EMPTY")
 
         # ── STATIONARY ─────────────────────────────────────────────────────
         # Pessoa parada: sd constante e alta, se alta; md e me perto de zero.
-        # Posição fixa ao longo de todos os T_WINDOW timesteps.
         flat = []
-        base_dist   = rng.uniform(60, 280)     # 60-280 cm — faixa realista
-        base_energy = rng.uniform(60, 100)      # energia estacionária alta
+        base_dist   = rng.uniform(60, 280)
+        base_energy = rng.uniform(60, 100)
         gate_base   = rng.uniform(30, 70)
         for _ in range(T_WINDOW):
-            md = float(np.clip(rng.normal(0, 3), 0, None))
-            me = float(np.clip(rng.normal(0, 3), 0, None))
-            sd = float(np.clip(rng.normal(base_dist, 6), 0, None))   # σ=6: bem estável
-            se = float(np.clip(rng.normal(base_energy, 5), 0, None))
-            mg = [float(np.clip(rng.normal(0, 2), 0, None)) for _ in range(4)]
-            sg = [float(np.clip(rng.normal(max(0, gate_base - j * 10), 5), 0, None))
+            md = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            me = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            sd = float(np.clip(rng.normal(base_dist, σ_stat), 0, None))
+            se = float(np.clip(rng.normal(base_energy, σ_base * 2.5), 0, None))
+            mg = [float(np.clip(rng.normal(0, σ_base), 0, None)) for _ in range(4)]
+            sg = [float(np.clip(rng.normal(max(0, gate_base - j * 10), σ_base * 2.5), 0, None))
                   for j in range(4)]
             flat.extend([md, me, sd, se] + mg + sg)
         X_list.append(flat); y_list.append("STATIONARY")
 
         # ── APPROACHING ─────────────────────────────────────────────────────
-        # Pessoa se aproximando: md decrescente de 250→40 cm (sinal claro).
-        # Ruído σ=6 (antes σ=12) para manter a tendência monotônica visível.
-        # Energia móvel alta e constante; sem alvo estacionário.
+        # Pessoa se aproximando: md decrescente de 250→40 cm.
         flat = []
-        start_dist  = rng.uniform(220, 400)    # começa longe
-        end_dist    = rng.uniform(25,  80)     # termina perto
-        base_energy = rng.uniform(70,  100)    # energia alta (alvo em movimento)
-        gate_base   = rng.uniform(35,  75)
-        for t in range(T_WINDOW):
-            frac  = t / max(T_WINDOW - 1, 1)
-            dist_t = start_dist * (1.0 - frac) + end_dist * frac
-            md = float(np.clip(rng.normal(dist_t, 6), 0, None))  # σ=6 (era 12)
-            me = float(np.clip(rng.normal(base_energy, 5), 0, None))
-            sd = float(np.clip(rng.normal(0, 3), 0, None))
-            se = float(np.clip(rng.normal(0, 3), 0, None))
-            mg = [float(np.clip(rng.normal(max(0, gate_base - j * 8), 5), 0, None))
-                  for j in range(4)]
-            sg = [float(np.clip(rng.normal(0, 2), 0, None)) for _ in range(4)]
-            flat.extend([md, me, sd, se] + mg + sg)
-        X_list.append(flat); y_list.append("APPROACHING")
-
-        # ── LEAVING ──────────────────────────────────────────────────────────
-        # Pessoa se afastando: md crescente de 40→250 cm (oposto de APPROACHING).
-        # Mesma estrutura de energia, mas tendência temporal invertida.
-        flat = []
-        start_dist  = rng.uniform(25,  80)     # começa perto
-        end_dist    = rng.uniform(220, 400)    # termina longe
+        start_dist  = rng.uniform(220, 400)
+        end_dist    = rng.uniform(25,  80)
         base_energy = rng.uniform(70,  100)
         gate_base   = rng.uniform(35,  75)
         for t in range(T_WINDOW):
             frac  = t / max(T_WINDOW - 1, 1)
             dist_t = start_dist * (1.0 - frac) + end_dist * frac
-            md = float(np.clip(rng.normal(dist_t, 6), 0, None))  # σ=6 (era 12)
-            me = float(np.clip(rng.normal(base_energy, 5), 0, None))
-            sd = float(np.clip(rng.normal(0, 3), 0, None))
-            se = float(np.clip(rng.normal(0, 3), 0, None))
-            mg = [float(np.clip(rng.normal(max(0, gate_base - j * 8), 5), 0, None))
+            md = float(np.clip(rng.normal(dist_t, σ_dyn), 0, None))
+            me = float(np.clip(rng.normal(base_energy, σ_base * 2.5), 0, None))
+            sd = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            se = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            mg = [float(np.clip(rng.normal(max(0, gate_base - j * 8), σ_base * 2.5), 0, None))
                   for j in range(4)]
-            sg = [float(np.clip(rng.normal(0, 2), 0, None)) for _ in range(4)]
+            sg = [float(np.clip(rng.normal(0, σ_base), 0, None)) for _ in range(4)]
+            flat.extend([md, me, sd, se] + mg + sg)
+        X_list.append(flat); y_list.append("APPROACHING")
+
+        # ── LEAVING ──────────────────────────────────────────────────────────
+        # Pessoa se afastando: md crescente de 40→250 cm.
+        flat = []
+        start_dist  = rng.uniform(25,  80)
+        end_dist    = rng.uniform(220, 400)
+        base_energy = rng.uniform(70,  100)
+        gate_base   = rng.uniform(35,  75)
+        for t in range(T_WINDOW):
+            frac  = t / max(T_WINDOW - 1, 1)
+            dist_t = start_dist * (1.0 - frac) + end_dist * frac
+            md = float(np.clip(rng.normal(dist_t, σ_dyn), 0, None))
+            me = float(np.clip(rng.normal(base_energy, σ_base * 2.5), 0, None))
+            sd = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            se = float(np.clip(rng.normal(0, σ_base * 1.5), 0, None))
+            mg = [float(np.clip(rng.normal(max(0, gate_base - j * 8), σ_base * 2.5), 0, None))
+                  for j in range(4)]
+            sg = [float(np.clip(rng.normal(0, σ_base), 0, None)) for _ in range(4)]
             flat.extend([md, me, sd, se] + mg + sg)
         X_list.append(flat); y_list.append("LEAVING")
 
     X = np.array(X_list, dtype=np.float32)
     y = np.array(y_list)
-    print(f"  Geradas {len(X)} amostras sintéticas ({n_per_class}/classe)")
+    print(f"  Geradas {len(X)} amostras sintéticas ({n_per_class}/classe, noise_scale={noise_scale:.1f})")
     print(f"  Distribuição: { {c: int((y==c).sum()) for c in CLASSES} }")
     print(f"  Faixa de valores: min={X.min():.2f}  max={X.max():.2f}")
     return X, y
@@ -230,10 +231,21 @@ def normalize(X_train, X_other_list):
     return X_norm, norm_stats
 
 
-def split_dataset(X, y_str, n_clients=3, n_pub_per_class=1, test_ratio=0.25):
+def split_dataset(X, y_str, n_clients=3, n_pub_per_class=1, test_ratio=0.25,
+                  non_iid=False):
     """
     Divide as amostras em D_pub (balanceado), D_test e D_priv por cliente.
-    Com o dataset simulado de 8 amostras, o split é mínimo mas funcional.
+
+    non_iid=True: split Dirichlet-style — cada cliente recebe classes
+    com proporções desiguais. Isso simula cenários federated realistas onde
+    clientes têm distribuições diferentes (ex: cliente 1 vê principalmente
+    STATIONARY+APPROACHING, cliente 2 vê LEAVING+EMPTY).
+
+    Padrão para 3 clientes com non_iid=True:
+      Cliente 1: STATIONARY e APPROACHING (biased 70%)
+      Cliente 2: LEAVING e EMPTY          (biased 70%)
+      Cliente 3: distribuição uniforme     (balanceado)
+    Isso força o KD a transferir conhecimento de classes sub-representadas.
     """
     unique_classes = CLASSES
     pub_idx, test_idx, priv_idx = [], [], []
@@ -247,18 +259,69 @@ def split_dataset(X, y_str, n_clients=3, n_pub_per_class=1, test_ratio=0.25):
         test_idx.extend(cls_idx[n_pub:n_pub + n_test].tolist())
         priv_idx.extend(cls_idx[n_pub + n_test:].tolist())
 
-    # Distribui D_priv entre clientes (round-robin simples)
-    np.random.shuffle(priv_idx)
+    # Distribui D_priv entre clientes
     client_idx = {i+1: [] for i in range(n_clients)}
-    for k, idx in enumerate(priv_idx):
-        client_idx[(k % n_clients) + 1].append(idx)
+
+    if non_iid and n_clients >= 2:
+        # Split não-IID: clientes com viés de classe
+        # Construir dict de índices por classe (do pool privado)
+        priv_by_class = {cls: [] for cls in CLASSES}
+        for idx in priv_idx:
+            priv_by_class[y_str[idx]].append(idx)
+
+        # Definir proporções por cliente:
+        # Padrão para 3 clientes — ajusta para qualquer número de clientes
+        # Matriz [n_clients x n_classes] de frações (linhas somam ≈1 por classe)
+        if n_clients == 2:
+            # Cliente 1: forte em STATIONARY+APPROACHING
+            # Cliente 2: forte em LEAVING+EMPTY
+            fracs = np.array([
+                [0.1, 0.7, 0.7, 0.1],   # cliente 1: EMPTY, STAT, APPR, LEAV
+                [0.9, 0.3, 0.3, 0.9],   # cliente 2
+            ], dtype=float)
+        elif n_clients == 3:
+            fracs = np.array([
+                [0.1, 0.7, 0.7, 0.1],   # cliente 1: STAT+APPR dominant
+                [0.7, 0.1, 0.1, 0.7],   # cliente 2: EMPT+LEAV dominant
+                [0.2, 0.2, 0.2, 0.2],   # cliente 3: balanced
+            ], dtype=float)
+        else:
+            # n_clients > 3: round-robin IID mas com Dirichlet
+            alpha = 0.5  # baixo alpha → mais heterogêneo
+            fracs_raw = np.random.dirichlet([alpha]*n_clients, size=N_CLASSES).T  # [n_clients, n_classes]
+            fracs = fracs_raw
+
+        # Normalizar por coluna para frações somarem 1 por classe
+        col_sums = fracs.sum(axis=0)
+        fracs = fracs / col_sums[np.newaxis, :]
+
+        for cls_i, cls in enumerate(CLASSES):
+            cls_pool = priv_by_class[cls].copy()
+            np.random.shuffle(cls_pool)
+            n_cls = len(cls_pool)
+            if n_cls == 0:
+                continue
+            # Distribuir proporcionalmente
+            cuts = [0]
+            for c in range(n_clients - 1):
+                cuts.append(cuts[-1] + int(round(fracs[c, cls_i] * n_cls)))
+            cuts.append(n_cls)
+            for c in range(n_clients):
+                client_idx[c+1].extend(cls_pool[cuts[c]:cuts[c+1]])
+    else:
+        # Split IID: round-robin simples
+        np.random.shuffle(priv_idx)
+        for k, idx in enumerate(priv_idx):
+            client_idx[(k % n_clients) + 1].append(idx)
 
     total = len(X)
-    print(f"\n  Dataset: {total} amostras totais")
-    print(f"  D_pub : {len(pub_idx)} amostras ({[y_str[i] for i in pub_idx]})")
+    mode_str = "não-IID" if non_iid else "IID"
+    print(f"\n  Dataset: {total} amostras totais  [{mode_str}]")
+    print(f"  D_pub : {len(pub_idx)} amostras — classes: {list(y_str[pub_idx])[:8]}{'...' if len(pub_idx)>8 else ''}")
     print(f"  D_test: {len(test_idx)} amostras")
     for c, idxs in client_idx.items():
-        print(f"  D_priv cliente {c}: {len(idxs)} amostras ({[y_str[i] for i in idxs]})")
+        dist = {cls: int((y_str[idxs] == cls).sum()) for cls in CLASSES} if idxs else {}
+        print(f"  D_priv cliente {c}: {len(idxs)} amostras  {dist}")
 
     if len(priv_idx) == 0:
         print("\n  [AVISO] Sem amostras privadas! Dataset simulado muito pequeno.")
@@ -449,6 +512,14 @@ def main():
                         help="Amostras públicas por classe")
     parser.add_argument("--temperature", type=float, default=2.0,
                         help="Temperatura para suavização dos logits")
+    parser.add_argument("--noise_scale", type=float, default=1.0,
+                        help="Multiplicador de ruído para dados sintéticos "
+                             "(1.0=fácil, 3.0=difícil, classes sobrepostas). "
+                             "Use ≥2.0 para ver KD delta > 0.")
+    parser.add_argument("--non_iid", action="store_true",
+                        help="Distribuição não-IID entre clientes: cada cliente "
+                             "recebe proporções diferentes por classe. "
+                             "Melhor para avaliar o benefício da federação.")
     args = parser.parse_args()
 
     # Fallback: se --input não foi passado explicitamente e --n_synth também não,
@@ -462,8 +533,9 @@ def main():
 
     # ── 1. Carregar / gerar dados ─────────────────────────────────
     if args.n_synth > 0:
-        print(f"\n[1] Gerando {args.n_synth} amostras sintéticas por classe...")
-        X, y_str = generate_synthetic_windows(args.n_synth)
+        print(f"\n[1] Gerando {args.n_synth} amostras sintéticas por classe "
+              f"(noise_scale={args.noise_scale})...")
+        X, y_str = generate_synthetic_windows(args.n_synth, noise_scale=args.noise_scale)
     else:
         input_path = args.input or "ld2410c_dataset_simulado.xlsx"
         print(f"\n[1] Carregando {input_path}...")
@@ -476,8 +548,9 @@ def main():
     print(f"\n[2] Dividindo dataset ({args.n_clients} clientes)...")
     pub_idx, test_idx, client_idx = split_dataset(
         X, y_str,
-        n_clients=args.n_clients,          # corrigido: era args.n_pub_per_class
+        n_clients=args.n_clients,
         n_pub_per_class=args.n_pub_per_class,
+        non_iid=args.non_iid,
     )
 
     X_pub  = X[pub_idx];  y_pub  = y_str[pub_idx]

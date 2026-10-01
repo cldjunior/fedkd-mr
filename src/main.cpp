@@ -37,6 +37,11 @@
 #include <ArduinoJson.h>
 #include <esp_task_wdt.h>
 
+#ifdef ENABLE_MQTT
+#include <WiFi.h>
+#include <PubSubClient.h>
+#endif
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 #ifndef IDFLOAT
   #define IDFLOAT float
@@ -71,6 +76,38 @@ struct RunMetrics {
 // ── Variáveis globais ─────────────────────────────────────────────────────────
 NeuralNetwork* model = nullptr;
 bool pipeline_done   = false;
+
+// Buffers de arquitetura — permanecem vivos enquanto o NeuralNetwork existir
+// (NeuralNetwork guarda ponteiros; não podem ser stack vars nem re-alocados por round)
+static unsigned int g_model_layers[MODEL_N_LAYERS];
+static byte         g_model_actv  [MODEL_N_LAYERS - 1];
+
+#ifdef ENABLE_MQTT
+static WiFiClient      g_wifi_client;
+static PubSubClient    g_mqtt_client(g_wifi_client);
+static volatile bool   g_teacher_received = false;  // sinaliza chegada de teacher_probs
+static volatile bool   g_start_cmd        = false;  // sinaliza comando 'start' do servidor
+static volatile int    g_current_round    = 0;      // número do round atual
+#endif
+
+// ── Resumo de métricas por round ──────────────────────────────────────────────
+// Preenchido por run_pipeline(); lido por loop() para montar o payload "done".
+struct RoundSummary {
+    float        acc_local  = 0.f;   // acurácia após treino local (eval pré-KD)
+    float        acc_kd     = 0.f;   // acurácia após KD           (eval pós-KD)
+    float        acc_ft     = 0.f;   // acurácia após fine-tuning  (eval final)
+    float        f1_local   = 0.f;
+    float        f1_kd      = 0.f;
+    float        f1_ft      = 0.f;
+    float        loss_local = 0.f;   // MSE final da etapa 1
+    float        loss_kd    = 0.f;   // MSE final da etapa 2 (soft targets)
+    float        loss_ft    = 0.f;   // MSE final da etapa 3
+    unsigned long t_local_ms = 0;
+    unsigned long t_kd_ms    = 0;
+    unsigned long t_ft_ms    = 0;
+    uint32_t     heap_free   = 0;    // heap após pipeline completo
+};
+static RoundSummary g_last_round;
 
 // ── Utilidades ────────────────────────────────────────────────────────────────
 static void print_sep() { Serial.println("----------------------------------------------------"); }
@@ -463,6 +500,136 @@ static int read_n_pub() {
     return doc["n_pub"] | 0;
 }
 
+// ── Funções MQTT ─────────────────────────────────────────────────────────────
+#ifdef ENABLE_MQTT
+
+static void mqtt_on_message(char* topic, byte* payload, unsigned int length) {
+    if (strcmp(topic, TOPIC_TEACHER_PULL) == 0) {
+        File f = LittleFS.open(TEACHER_PROBS_PATH, "w");
+        if (f) { f.write(payload, length); f.close(); }
+        int n_pub_recv = (int)(length / (N_CLASSES * sizeof(float)));
+        File fm = LittleFS.open(TEACHER_PROBS_META_PATH, "w");
+        if (fm) {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "{\"n_pub\":%d}", n_pub_recv);
+            fm.print(buf); fm.close();
+        }
+        g_teacher_received = true;
+        Serial.printf("\n[MQTT] teacher_probs recebido: %d amostras × %d classes (%u bytes)\n",
+                      n_pub_recv, N_CLASSES, length);
+    }
+    else if (strcmp(topic, TOPIC_CMD_PULL) == 0) {
+        JsonDocument doc;
+        if (deserializeJson(doc, (char*)payload, length) == DeserializationError::Ok) {
+            const char* cmd = doc["cmd"] | "";
+            if (strcmp(cmd, "start") == 0) {
+                g_current_round = doc["round"] | 0;
+                g_start_cmd     = true;
+                Serial.printf("[MQTT] Comando 'start' recebido (round %d)\n", g_current_round);
+            }
+        }
+    }
+}
+
+static bool mqtt_connect() {
+    Serial.printf("[MQTT] Conectando Wi-Fi: %s", WIFI_SSID);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    uint32_t t0 = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - t0 < CONNECTION_TIMEOUT) {
+        delay(500); Serial.print("."); esp_task_wdt_reset();
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("\n[MQTT] ERRO: Wi-Fi não conectou. Verifique WIFI_SSID/PASSWORD.");
+        return false;
+    }
+    Serial.printf("\n[MQTT] Wi-Fi OK — IP: %s\n", WiFi.localIP().toString().c_str());
+    g_mqtt_client.setServer(MQTT_BROKER, MQTT_PORT);
+    g_mqtt_client.setCallback(mqtt_on_message);
+    if (!g_mqtt_client.setBufferSize(2048))
+        Serial.println("[MQTT] AVISO: falha ao aumentar buffer — usando 256 bytes padrão");
+    if (!g_mqtt_client.connect(CLIENT_NAME)) {
+        Serial.printf("[MQTT] ERRO: broker %s:%d não respondeu (state=%d)\n",
+                      MQTT_BROKER, MQTT_PORT, g_mqtt_client.state());
+        return false;
+    }
+    g_mqtt_client.subscribe(TOPIC_TEACHER_PULL);
+    g_mqtt_client.subscribe(TOPIC_CMD_PULL);
+    Serial.printf("[MQTT] Conectado ao broker %s:%d\n", MQTT_BROKER, MQTT_PORT);
+    Serial.printf("[MQTT] Subscrito: %s | %s\n", TOPIC_TEACHER_PULL, TOPIC_CMD_PULL);
+    return true;
+}
+
+static int publish_logits_mqtt(NeuralNetwork& nn) {
+    // O treino pode ter durado mais que o keepalive (15 s padrão) sem loop().
+    // Reconecta se necessário antes de publicar.
+    if (!g_mqtt_client.connected()) {
+        Serial.println("[MQTT] Reconectando antes de publicar logits...");
+        if (!g_mqtt_client.connect(CLIENT_NAME)) {
+            Serial.printf("[MQTT] Falha ao reconectar (state=%d)\n", g_mqtt_client.state());
+            return -1;
+        }
+        g_mqtt_client.subscribe(TOPIC_TEACHER_PULL);
+        g_mqtt_client.subscribe(TOPIC_CMD_PULL);
+        Serial.println("[MQTT] Reconectado.");
+    }
+    DatasetSchema s;
+    if (!load_schema(METADATA_JSON_PATH, s)) return -1;
+    File fc = LittleFS.open(XY_PUB_PATH, "r");
+    if (!fc) { Serial.println("[MQTT] Não abriu dataset público"); return -1; }
+    int n_pub = (int)(fc.size() / s.bytes_per_row);
+    fc.close();
+    if (n_pub <= 0) { Serial.println("[MQTT] Dataset público vazio"); return -1; }
+    size_t buf_size = (size_t)n_pub * N_CLASSES * sizeof(float);
+    float* lb = (float*)malloc(buf_size);
+    if (!lb) { Serial.println("[MQTT] malloc logits falhou"); return -1; }
+    uint8_t* rowbuf = (uint8_t*)malloc(s.bytes_per_row);
+    if (!rowbuf) { free(lb); return -1; }
+    IDFLOAT* x = new IDFLOAT[N_INPUT];
+    File f = LittleFS.open(XY_PUB_PATH, "r");
+    int idx = 0;
+    while (f.available() >= s.bytes_per_row && idx < n_pub) {
+        if (f.read(rowbuf, s.bytes_per_row) != (size_t)s.bytes_per_row) break;
+        for (int i = 0; i < N_INPUT; i++) {
+            float v; memcpy(&v, rowbuf + s.feat_offsets[i], 4); x[i] = (IDFLOAT)v;
+        }
+        IDFLOAT* pred = nn.FeedForward(x);
+        for (int k = 0; k < N_CLASSES; k++)
+            lb[idx * N_CLASSES + k] = (float)pred[k];
+        idx++; esp_task_wdt_reset();
+    }
+    f.close();
+    bool ok = g_mqtt_client.publish(TOPIC_LOGITS_PUSH,
+                                    (uint8_t*)lb, (unsigned int)buf_size, false);
+    Serial.printf("[MQTT] Logits publicados: %d amostras → %s  (%u bytes) [%s]\n",
+                  idx, TOPIC_LOGITS_PUSH, (unsigned)buf_size, ok ? "OK" : "FALHA");
+    delete[] x; free(rowbuf); free(lb);
+    return ok ? idx : -1;
+}
+
+static bool wait_for_teacher_probs(uint32_t timeout_ms) {
+    uint32_t deadline = millis() + timeout_ms;
+    Serial.printf("[MQTT] Aguardando teacher_probs (timeout=%lus)...\n",
+                  (unsigned long)(timeout_ms / 1000));
+    static uint32_t last_print = 0;
+    while (millis() < deadline) {
+        g_mqtt_client.loop();
+        if (g_teacher_received) {
+            Serial.println("[MQTT] teacher_probs recebido — prosseguindo com KD.");
+            return true;
+        }
+        uint32_t rem = deadline - millis();
+        if (millis() - last_print >= 10000) {
+            last_print = millis();
+            Serial.printf("[MQTT] ... %lus restantes\n", (unsigned long)(rem / 1000));
+        }
+        esp_task_wdt_reset(); delay(200);
+    }
+    Serial.println("[MQTT] TIMEOUT aguardando teacher_probs — KD será pulado.");
+    return false;
+}
+
+#endif  // ENABLE_MQTT
+
 // ── Pipeline principal ───────────────────────────────────────────────────────
 static void run_pipeline() {
     print_sep();
@@ -473,17 +640,21 @@ static void run_pipeline() {
     print_mem();
 
     // ── Criar modelo ─────────────────────────────────────────────
-    // IMPORTANTE: alocar no heap — NeuralNetwork guarda ponteiros
-    // internos para layers e actv; stack vars seriam corrompidas
-    // por chamadas subsequentes (JsonDocument em load_schema, etc.)
+    // Libera modelo do round anterior antes de alocar novo.
+    // g_model_layers / g_model_actv são globais estáticos: NeuralNetwork
+    // guarda ponteiros para eles; não podem ser stack vars nem re-alocados.
+    if (model != nullptr) {
+        delete model;
+        model = nullptr;
+        Serial.println("[MEM] Modelo anterior liberado.");
+    }
+
     unsigned int layers_init[] = MODEL_LAYERS;
     byte         actv_init[]   = MODEL_ACTV;
-    unsigned int* layers = new unsigned int[MODEL_N_LAYERS];
-    byte*         actv   = new byte[MODEL_N_LAYERS - 1];
-    memcpy(layers, layers_init, MODEL_N_LAYERS   * sizeof(unsigned int));
-    memcpy(actv,   actv_init,   (MODEL_N_LAYERS-1) * sizeof(byte));
+    memcpy(g_model_layers, layers_init, MODEL_N_LAYERS     * sizeof(unsigned int));
+    memcpy(g_model_actv,   actv_init,   (MODEL_N_LAYERS-1) * sizeof(byte));
 
-    model = new NeuralNetwork(layers, MODEL_N_LAYERS, actv);
+    model = new NeuralNetwork(g_model_layers, MODEL_N_LAYERS, g_model_actv);
     model->LearningRateOfWeights = LOCAL_LR_WEIGHTS;
     model->LearningRateOfBiases  = LOCAL_LR_BIASES;
 
@@ -506,11 +677,33 @@ static void run_pipeline() {
     RunMetrics eval_pre = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
                                    "Avaliação pré-KD (D_priv)");
 
+    // Registra métricas da etapa 1
+    g_last_round = RoundSummary{};          // zera tudo antes de preencher
+    g_last_round.acc_local  = eval_pre.accuracy();
+    g_last_round.f1_local   = eval_pre.macro_f1();
+    g_last_round.loss_local = m_local.mse_last;
+    g_last_round.t_local_ms = m_local.ms;
+    // acc_kd/acc_ft default = acc_local (caso KD não execute por n_pub=0)
+    g_last_round.acc_kd = g_last_round.acc_local;
+    g_last_round.acc_ft = g_last_round.acc_local;
+    g_last_round.f1_kd  = g_last_round.f1_local;
+    g_last_round.f1_ft  = g_last_round.f1_local;
+
     // ── Etapa 2: Knowledge Distillation (KD) ─────────────────────
     print_sep();
     Serial.println("ETAPA 2 — Knowledge Distillation (D_pub + teacher_probs)");
 
+#ifdef ENABLE_MQTT
+    // Federação real: publica logits no servidor e aguarda teacher_probs agregado.
+    // O callback mqtt_on_message() salva teacher_probs em LittleFS (TEACHER_PROBS_PATH)
+    // e atualiza TEACHER_PROBS_META_PATH → read_n_pub() e train_kd() funcionam sem mudanças.
+    publish_logits_mqtt(*model);
+    wait_for_teacher_probs(120000UL);   // 2 min de timeout
+    int n_pub = read_n_pub();           // lê n_pub salvo pelo callback
+#else
+    // Modo offline: usa teacher_probs pré-computado gravado em LittleFS
     int n_pub = read_n_pub();
+#endif
     if (n_pub <= 0) {
         Serial.println("[AVISO] n_pub=0 — pulando KD (teacher_probs não disponível)");
     } else {
@@ -542,6 +735,16 @@ static void run_pipeline() {
         Serial.printf("  KD concluído em %lums\n", m_kd.ms);
         print_mem();
 
+        // Registra métricas da etapa 2
+        g_last_round.loss_kd  = m_kd.mse_last;
+        g_last_round.t_kd_ms  = m_kd.ms;
+
+        // Avaliação intermédia pós-KD (antes do fine-tuning)
+        RunMetrics eval_kd = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
+                                      "Avaliação pós-KD / pré-FT (D_priv)");
+        g_last_round.acc_kd = eval_kd.accuracy();
+        g_last_round.f1_kd  = eval_kd.macro_f1();
+
         // ── Etapa 3: Fine-tuning supervisionado pós-KD ───────────
         print_sep();
         Serial.println("ETAPA 3 — Fine-tuning supervisionado (D_priv)");
@@ -552,6 +755,9 @@ static void run_pipeline() {
             "Fine-tuning"
         );
         Serial.printf("  Fine-tuning concluído em %lums\n", m_ft.ms);
+        // Registra métricas da etapa 3
+        g_last_round.loss_ft = m_ft.mse_last;
+        g_last_round.t_ft_ms = m_ft.ms;
         print_mem();
     }
 
@@ -561,17 +767,27 @@ static void run_pipeline() {
     RunMetrics eval_post = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
                                     "Avaliação pós-KD (D_priv)");
 
+    // Registra métricas finais
+    g_last_round.acc_ft    = eval_post.accuracy();
+    g_last_round.f1_ft     = eval_post.macro_f1();
+    g_last_round.heap_free = (uint32_t)ESP.getFreeHeap();
+
     // ── Resumo comparativo ────────────────────────────────────────
     print_sep();
     Serial.println("RESUMO");
-    Serial.printf("  Acc pré-KD : %.3f\n", eval_pre.accuracy());
-    Serial.printf("  Acc pós-KD : %.3f   (Δ = %+.3f)\n",
-                  eval_post.accuracy(),
-                  eval_post.accuracy() - eval_pre.accuracy());
-    Serial.printf("  F1  pré-KD : %.3f\n", eval_pre.macro_f1());
-    Serial.printf("  F1  pós-KD : %.3f   (Δ = %+.3f)\n",
-                  eval_post.macro_f1(),
-                  eval_post.macro_f1() - eval_pre.macro_f1());
+    Serial.printf("  Acc local  : %.3f   F1=%.3f\n",
+                  g_last_round.acc_local, g_last_round.f1_local);
+    Serial.printf("  Acc pós-KD : %.3f   F1=%.3f   (Δacc=%+.3f)\n",
+                  g_last_round.acc_kd, g_last_round.f1_kd,
+                  g_last_round.acc_kd - g_last_round.acc_local);
+    Serial.printf("  Acc pós-FT : %.3f   F1=%.3f   (Δacc=%+.3f)\n",
+                  g_last_round.acc_ft, g_last_round.f1_ft,
+                  g_last_round.acc_ft - g_last_round.acc_local);
+    Serial.printf("  Loss local/KD/FT : %.5f / %.5f / %.5f\n",
+                  g_last_round.loss_local, g_last_round.loss_kd, g_last_round.loss_ft);
+    Serial.printf("  Tempos  local=%lums  KD=%lums  FT=%lums\n",
+                  g_last_round.t_local_ms, g_last_round.t_kd_ms, g_last_round.t_ft_ms);
+    Serial.printf("  Heap livre: %u bytes\n", (unsigned)g_last_round.heap_free);
     print_sep();
     Serial.println("Pipeline concluído. Entrando em modo idle.");
 
@@ -613,13 +829,89 @@ void setup() {
             Serial.printf("  OK: %s\n", p);
     }
 
-    // Executa pipeline uma única vez
+    // ── Inicializa MQTT ou executa pipeline offline ──────────────
+#ifdef ENABLE_MQTT
+    bool mqtt_ok = mqtt_connect();
+    if (mqtt_ok) {
+        // Modo federado: pipeline será disparado por loop() ao receber 'start'
+        Serial.println("[SETUP] MQTT pronto. Aguardando comando 'start' do servidor...");
+        Serial.println("[SETUP] (Inicie o servidor: python fedkd_server.py --host <IP>)");
+        // pipeline_done permanece false → loop() gerencia os rounds
+    } else {
+        // Fallback offline: executa pipeline local com teacher_probs do LittleFS
+        Serial.println("[SETUP] MQTT indisponível — executando pipeline local (modo offline).");
+        run_pipeline();
+        pipeline_done = true;
+    }
+#else
+    // Modo compilado sem MQTT: executa pipeline uma única vez
     run_pipeline();
     pipeline_done = true;
+#endif
 }
 
 void loop() {
-    // Nada a fazer após o pipeline; reset do WDT para não reiniciar
+#ifdef ENABLE_MQTT
+    // ── Mantém conexão MQTT ativa ──────────────────────────────
+    if (!g_mqtt_client.connected()) {
+        Serial.println("[MQTT] Reconectando ao broker...");
+        if (g_mqtt_client.connect(CLIENT_NAME)) {
+            g_mqtt_client.subscribe(TOPIC_TEACHER_PULL);
+            g_mqtt_client.subscribe(TOPIC_CMD_PULL);
+            Serial.println("[MQTT] Reconectado.");
+        } else {
+            // Tenta novamente após 5 s
+            esp_task_wdt_reset();
+            delay(5000);
+            return;
+        }
+    }
+    g_mqtt_client.loop();
+
+    // ── Processa comando 'start' recebido via MQTT ─────────────
+    if (g_start_cmd) {
+        g_start_cmd        = false;
+        g_teacher_received = false;
+
+        int round = g_current_round;
+        Serial.printf("\n[MQTT] === Round %d iniciado ===\n", round);
+
+        // Re-aloca modelo se necessário (rounds subsequentes reutilizam o existente)
+        run_pipeline();
+
+        // Publica confirmação de conclusão do round com métricas completas
+        char done_msg[384];
+        snprintf(done_msg, sizeof(done_msg),
+            "{"
+            "\"status\":\"done\","
+            "\"round\":%d,"
+            "\"client\":\"%s\","
+            "\"acc_local\":%.4f,\"acc_kd\":%.4f,\"acc_ft\":%.4f,"
+            "\"f1_local\":%.4f,\"f1_kd\":%.4f,\"f1_ft\":%.4f,"
+            "\"loss_local\":%.5f,\"loss_kd\":%.5f,\"loss_ft\":%.5f,"
+            "\"t_local_ms\":%lu,\"t_kd_ms\":%lu,\"t_ft_ms\":%lu,"
+            "\"heap_free\":%u"
+            "}",
+            round, CLIENT_NAME,
+            g_last_round.acc_local, g_last_round.acc_kd, g_last_round.acc_ft,
+            g_last_round.f1_local,  g_last_round.f1_kd,  g_last_round.f1_ft,
+            g_last_round.loss_local, g_last_round.loss_kd, g_last_round.loss_ft,
+            g_last_round.t_local_ms, g_last_round.t_kd_ms, g_last_round.t_ft_ms,
+            (unsigned)g_last_round.heap_free
+        );
+        g_mqtt_client.publish(TOPIC_CMD_PUSH,
+                              (uint8_t*)done_msg, (unsigned int)strlen(done_msg),
+                              /*retain=*/false);
+        Serial.printf("[MQTT] Round %d métricas publicadas em %s\n",
+                      round, TOPIC_CMD_PUSH);
+    }
+
+    esp_task_wdt_reset();
+    delay(100);
+
+#else
+    // Sem MQTT: pipeline já executou em setup(), loop vazio
     esp_task_wdt_reset();
     delay(5000);
+#endif
 }
