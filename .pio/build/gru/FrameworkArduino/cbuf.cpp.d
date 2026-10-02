@@ -1,0 +1,3 @@
+.pio/build/gru/FrameworkArduino/cbuf.cpp.o: \
+ /home/claudio/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.cpp \
+ /home/claudio/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h

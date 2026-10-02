@@ -12,8 +12,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/esp32dev/firmware.elf",
-            "projectEnvName": "esp32dev",
+            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/mlp/firmware.elf",
+            "projectEnvName": "mlp",
             "toolchainBinDir": "/home/claudio/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
@@ -25,8 +25,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/esp32dev/firmware.elf",
-            "projectEnvName": "esp32dev",
+            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/mlp/firmware.elf",
+            "projectEnvName": "mlp",
             "toolchainBinDir": "/home/claudio/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -34,8 +34,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/esp32dev/firmware.elf",
-            "projectEnvName": "esp32dev",
+            "executable": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/.pio/build/mlp/firmware.elf",
+            "projectEnvName": "mlp",
             "toolchainBinDir": "/home/claudio/.platformio/packages/toolchain-xtensa-esp32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
