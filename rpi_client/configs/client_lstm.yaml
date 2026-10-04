@@ -1,0 +1,54 @@
+# =============================================================
+# configs/client_lstm.yaml — FedKD-MR RPi  (LSTM)
+# =============================================================
+# Uso:
+#   python fedkd_client.py --config configs/client_lstm.yaml
+# =============================================================
+
+# ── Identificação ─────────────────────────────────────────────
+client_id: 5
+model: lstm
+
+# ── Dataset ───────────────────────────────────────────────────
+data_dir:   data/
+train_file: dataset_priv.bin
+pub_file:   dataset_pub.bin
+meta_file:  metadata.json
+
+# ── Janela temporal ───────────────────────────────────────────
+t_window:   8
+n_features: 12
+n_classes:  4
+
+# ── Hiperparâmetros — treino local ────────────────────────────
+local_epochs: 50
+local_lr:     0.001
+
+# ── Hiperparâmetros — Knowledge Distillation ──────────────────
+kd_epochs:      20
+kd_lr:          0.0005
+kd_temperature: 1.0
+
+# ── Hiperparâmetros — Fine-tuning ─────────────────────────────
+ft_epochs: 10
+ft_lr:     0.0005
+
+# ── Batching ──────────────────────────────────────────────────
+batch_size: 32
+
+# ── Arquitetura LSTM ──────────────────────────────────────────
+# Mesmos parâmetros do GRU; LSTM tem gates extras (c_t)
+rnn_hidden:        128
+rnn_layers:        2
+rnn_dropout:       0.3
+rnn_bidirectional: false
+
+# ── MQTT ──────────────────────────────────────────────────────
+broker:          "192.168.0.12"
+port:            1883
+keepalive:       600
+teacher_timeout: 600
+
+# ── Runtime ───────────────────────────────────────────────────
+device: cpu
+seed:   42

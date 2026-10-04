@@ -1,64 +1,340 @@
-# FedKD-MR: aprendizagem federada heterogênea com destilação em múltiplas rodadas
+# FedKD-MR — Federated Knowledge Distillation with Model Randomization
 
-Este repositório contém um notebook experimental do **FedKD-MR** (*Federated Knowledge Distillation – Multi-Round*). O método coordena clientes com arquiteturas distintas por meio das predições que seus modelos produzem sobre um conjunto público compartilhado, $D_{\mathrm{pub}}$. A coordenação ocorre no espaço de saída, sem agregação dos parâmetros dos modelos.
+Sistema de aprendizado federado heterogêneo para detecção de presença com radar HLK-LD2410C.  
+Combina ESP32s (firmware C++) e Raspberry Pis / notebooks (Python + PyTorch) em uma federação coordenada por MQTT.
 
-O notebook contempla experimentos de reconhecimento de atividades humanas com **UCI-HAR**, **Opportunity** e **WISDM**. A população heterogênea inclui modelos **MLP, CNN 1D e GRU**. Há também implementações de **FedAvg** e **FedProx** como referências homogêneas com CNN 1D.
+---
 
-## Proposta
+## Visão geral da arquitetura
 
-Depois do treinamento supervisionado inicial, cada rodada do FedKD-MR segue estas etapas:
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Broker MQTT (Mosquitto)               │
+│                      192.168.0.12:1883                  │
+└───────┬──────────────────────┬──────────────────────────┘
+        │                      │
+        ▼                      ▼
+┌───────────────┐    ┌──────────────────────────────────┐
+│  fedkd_server │    │  fedkd_monitor                   │
+│  (Python)     │    │  (Python — dashboard http :8080) │
+└───────┬───────┘    └──────────────────────────────────┘
+        │ publica teacher_probs + cmd/start
+        │ recebe logits + cmd/done
+        │
+   ┌────┴─────────────────────────────────────────┐
+   │                                              │
+   ▼                                              ▼
+ESP32 #1-3 (MLP em C++)          RPi #4-8 (Python + PyTorch)
+  client_id 1, 2, 3                GRU · LSTM · CNN1D · CNN2D · MLP
+  firmware/main.cpp                rpi_client/fedkd_client.py
+```
 
-1. Os clientes calculam logits para as mesmas amostras de $D_{\mathrm{pub}}$.
-2. Os logits formam um consenso ponderado pelo número de amostras privadas de treinamento de cada cliente.
-3. Cada cliente realiza destilação de conhecimento no conjunto público usando o consenso.
-4. Cada cliente realiza *fine-tuning* supervisionado com seus próprios dados privados.
-5. Na rodada seguinte, os logits são recalculados a partir dos modelos atualizados.
+### Protocolo MQTT por tópico
 
-As etapas de destilação e *fine-tuning* são sequenciais. A colaboração pressupõe uma representação de entrada compartilhada e o mesmo espaço de classes, embora os modelos possam ter arquiteturas e parametrizações diferentes. Em cada rodada, a matriz transmitida por cliente contém $|D_{\mathrm{pub}}| \times C$ valores, em que $C$ é o número de classes.
+| Tópico | Direção | Formato | Conteúdo |
+|--------|---------|---------|----------|
+| `fedkd/client/{id}/logits/push` | cliente → servidor | binary float32 | probabilidades (n_pub × n_classes) |
+| `fedkd/client/{id}/teacher/pull` | servidor → cliente | binary float32 | teacher_probs agregados |
+| `fedkd/client/{id}/cmd/pull` | servidor → cliente | JSON | `{"cmd":"start","round":N}` |
+| `fedkd/client/{id}/cmd/push` | cliente → servidor | JSON | done + métricas completas |
 
-## Configurações do estudo
+---
 
-O artigo associado compara quatro construções do conjunto público:
+## Estrutura de arquivos
 
-| Condição | Construção de $D_{\mathrm{pub}}$ | Amostras |
-|---|---|---:|
-| C1 | Representativa | 512 |
-| C2 | Representativa | 1.024 |
-| C3 | Cobertura parcial | 512 |
-| C4 | Cobertura parcial | 1.024 |
+```
+FedKD-MR/
+│
+├── prepare_dataset.py          # gera todos os .bin + metadata.json
+│
+├── server/
+│   ├── fedkd_server.py         # servidor de agregação (não modificar)
+│   └── fedkd_monitor.py        # dashboard web em tempo real
+│
+├── rpi_client/
+│   ├── fedkd_client.py         # pipeline principal do cliente Python
+│   ├── mqtt_handler.py         # protocolo MQTT (serialização binária)
+│   ├── models.py               # GRU · LSTM · CNN1D · CNN2D · MLP
+│   ├── dataset.py              # leitura de .bin + DataLoader
+│   ├── config.py               # carregamento de YAML + defaults
+│   ├── requirements.txt
+│   └── configs/
+│       ├── client_gru.yaml     # RPi #4 — GRU
+│       ├── client_lstm.yaml    # RPi #5 — LSTM
+│       ├── client_cnn1d.yaml   # RPi #6 — CNN1D
+│       ├── client_cnn2d.yaml   # RPi #7 — CNN2D
+│       └── client_mlp.yaml     # RPi #8 — MLP
+│
+├── firmware/
+│   ├── main.cpp                # firmware ESP32 (PlatformIO)
+│   ├── Config.h / Config_*.h   # configuração por cliente ESP32
+│   ├── Model.h / MLPModel.h / GRUModel.h / CNN1DModel.h
+│   ├── platformio.ini
+│   └── README.md               # instruções específicas do firmware
+│
+└── output_fedkd/               # gerado pelo prepare_dataset.py
+    ├── client_{1..8}/
+    │   ├── dataset_priv.bin    # D_priv do cliente (treino local)
+    │   └── metadata.json
+    ├── shared/
+    │   ├── dataset_pub.bin     # D_pub (mesmo para todos os clientes)
+    │   ├── metadata.json
+    │   ├── teacher_probs.bin   # consenso inicial (simulado)
+    │   └── teacher_probs_meta.json
+    └── test/
+        └── dataset_test.bin    # avaliação independente
+```
 
-O protocolo descrito no artigo emprega **40 épocas de treinamento local inicial** e **5 rodadas** de colaboração. Cada rodada contém **8 épocas de destilação** e **8 épocas de *fine-tuning***. A temperatura de destilação é **3,0**, e o parâmetro de *sharpening* é **0,7**.
+---
 
-## Resultados básicos
+## Requisitos
 
-A tabela mostra a condição com maior **acurácia média dos clientes na quinta rodada** em cada conjunto de dados, conforme o manuscrito *FedKD-MR Across IoT Sensor Domains: Public-Set Construction and Size*. Os valores são médias ± desvios padrão de **cinco execuções independentes**.
+### Servidor e monitor (notebook / PC)
+```bash
+pip install paho-mqtt websockets
+```
 
-| Conjunto de dados | Melhor condição em acurácia | Acurácia média | Macro-$F_1$ |
-|---|---|---:|---:|
-| UCI-HAR | C2: representativa, 1.024 amostras | 0,5204 ± 0,0175 | 0,4699 ± 0,0200 |
-| Opportunity | C1: representativa, 512 amostras | 0,4526 ± 0,0077 | 0,2938 ± 0,0152 |
-| WISDM | C1: representativa, 512 amostras | 0,2909 ± 0,0058 | 0,2241 ± 0,0047 |
+### Cliente Python (RPi ou notebook simulando RPi)
+```bash
+cd rpi_client/
+pip install -r requirements.txt
+# PyTorch em ARM (Raspberry Pi 4 aarch64):
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
 
-Nas construções avaliadas, a condição representativa teve maior acurácia média que a condição de cobertura parcial nos dois tamanhos e nos três conjuntos de dados. O tamanho mais favorável variou entre os domínios. Em WISDM, a acurácia mínima de um cliente permaneceu em zero em todas as condições.
+### Broker MQTT
+```bash
+sudo apt install mosquitto mosquitto-clients
+sudo systemctl enable --now mosquitto
+```
 
-Os testes globais detectaram diferenças entre C1–C4 em cada conjunto de dados. As comparações individuais entre pares não permaneceram significativas após a correção de Holm. Assim, a tabela identifica os melhores resultados descritivos dentro do protocolo avaliado, sem estabelecer superioridade estatística par a par.
+---
 
-## Arquivo e execução
+## Passo a passo completo
 
-[`FedKD_MR.ipynb`](FedKD_MR.ipynb) contém o carregamento dos conjuntos de dados, a criação de clientes e de $D_{\mathrm{pub}}$, o treinamento inicial, as rodadas de destilação e *fine-tuning*, a avaliação, os gráficos e as referências FedAvg/FedProx.
+### 1. Gerar os datasets
 
-O notebook foi desenvolvido para **Google Colab** e usa caminhos do **Google Drive**. Antes de executá-lo:
+```bash
+# Sintético — 200 amostras/classe, 8 clientes, não-IID, ruído realista
+python prepare_dataset.py \
+    --n_synth 200 \
+    --n_clients 8 \
+    --non_iid \
+    --noise_scale 2.5 \
+    --n_pub_per_class 20 \
+    --output output_fedkd
 
-1. Obtenha [UCI-HAR](https://doi.org/10.24432/C54S4K), [Opportunity](https://doi.org/10.24432/C5M027) e WISDM junto às respectivas fontes de dados.
-2. Ajuste `UCI_HAR_ROOT`, `OPPORTUNITY_ROOT` e `WISDM_ROOT` na célula de carregamento.
-3. Ajuste `BASE_RESULTS_DIR` para o diretório em que serão gravados métricas e artefatos.
-4. Na configuração central, escolha o conjunto de dados, o modo e tamanho de $D_{\mathrm{pub}}$, o identificador do experimento e a semente.
-5. Execute as células em ordem. O download dos dados e a montagem do Drive não são automatizados pelo notebook.
+# Com Excel real:
+python prepare_dataset.py \
+    --input ld2410c_dataset.xlsx \
+    --n_clients 8 \
+    --non_iid \
+    --n_pub_per_class 20 \
+    --output output_fedkd
+```
 
-O notebook importa PyTorch, torchvision, NumPy, pandas, scikit-learn, Matplotlib, Seaborn e tqdm. A instalação do PyTorch deve ser adequada ao ambiente CPU ou CUDA utilizado. **Os conjuntos de dados e os artefatos de execução não estão incluídos neste repositório.**
+> **`--noise_scale`**: 1.0 = classes bem separadas (acurácia ~100%),
+> 2.0–3.0 = classes sobrepostas (acurácia 70–85%, mais realista para avaliar KD).  
+> **`--n_pub_per_class 20`**: gera 80 amostras no D_pub (20 × 4 classes), necessário para um KD efetivo nos ESP32.
 
-A configuração atualmente selecionada é `UCI_HAR`, **C3** (cobertura parcial, 512 amostras), semente `42`. Essa configuração única não gera as médias de cinco execuções apresentadas acima.
+Saída: `output_fedkd/client_{1..8}/`, `output_fedkd/shared/`, `output_fedkd/test/`.
 
-## Referência
+### 2. Distribuir os dados
 
-Os resultados resumidos aqui vêm do manuscrito **“FedKD-MR Across IoT Sensor Domains: Public-Set Construction and Size”**. Esse estudo examina a construção e o tamanho de $D_{\mathrm{pub}}$ em três domínios. O método FedKD-MR foi apresentado em um trabalho anterior.
+**Para os ESP32** (via PlatformIO → Upload Filesystem Image):
+```
+output_fedkd/client_1/dataset_priv.bin      → firmware/data/dataset_priv.bin
+output_fedkd/client_1/metadata.json         → firmware/data/metadata.json
+output_fedkd/shared/dataset_pub.bin         → firmware/data/dataset_pub.bin
+output_fedkd/shared/teacher_probs.bin       → firmware/data/teacher_probs.bin
+output_fedkd/shared/teacher_probs_meta.json → firmware/data/teacher_probs_meta.json
+```
+Repita para ESP32 #2 (`client_2/`) e #3 (`client_3/`). Use sempre o `metadata.json` do `client_X/` — ele tem prioridade sobre o do `shared/`.
+
+**Para cada instância RPi** (ou pasta local no notebook):
+```bash
+# Exemplo para o cliente GRU (id=4):
+mkdir -p rpi_client/data_client4/
+cp output_fedkd/client_4/dataset_priv.bin  rpi_client/data_client4/
+cp output_fedkd/client_4/metadata.json     rpi_client/data_client4/
+cp output_fedkd/shared/dataset_pub.bin     rpi_client/data_client4/
+cp output_fedkd/shared/metadata.json       rpi_client/data_client4/  # mesmo arquivo
+cp output_fedkd/test/dataset_test.bin      rpi_client/data_client4/  # avaliação
+```
+
+Aponte o `data_dir` no YAML para a pasta correspondente:
+```yaml
+data_dir: data_client4/
+```
+
+### 3. Iniciar o servidor
+
+```bash
+cd server/
+python fedkd_server.py
+```
+
+O servidor aguarda conexões dos clientes registrados antes de enviar o primeiro `cmd/start`.
+
+### 4. Abrir o monitor (opcional, mas recomendado)
+
+```bash
+cd server/
+python fedkd_monitor.py --broker 192.168.0.12 --http-port 8080
+```
+
+Abra `http://localhost:8080` no navegador. O monitor é passivo — apenas observa.
+
+### 5. Iniciar os clientes Python
+
+Cada cliente em um terminal separado:
+
+```bash
+cd rpi_client/
+python fedkd_client.py --config configs/client_gru.yaml   # RPi #4
+python fedkd_client.py --config configs/client_lstm.yaml  # RPi #5
+python fedkd_client.py --config configs/client_cnn1d.yaml # RPi #6
+python fedkd_client.py --config configs/client_cnn2d.yaml # RPi #7
+python fedkd_client.py --config configs/client_mlp.yaml   # RPi #8
+```
+
+Ou todos de uma vez em background:
+```bash
+for cfg in gru lstm cnn1d cnn2d mlp; do
+    python fedkd_client.py --config configs/client_${cfg}.yaml \
+        > logs/client_${cfg}.log 2>&1 &
+done
+```
+
+---
+
+## Configuração YAML dos clientes RPi
+
+Todos os YAMLs compartilham os mesmos campos base:
+
+```yaml
+client_id:  4              # único por cliente (4–8 para RPi)
+model:      gru            # gru | lstm | cnn1d | cnn2d | mlp
+
+data_dir:   data_client4/  # pasta com os .bin deste cliente
+train_file: dataset_priv.bin
+pub_file:   dataset_pub.bin
+meta_file:  metadata.json
+
+t_window:   8              # timesteps por janela
+n_features: 12             # features por timestep
+n_classes:  4              # EMPTY · STATIONARY · APPROACHING · LEAVING
+
+local_epochs: 50;  local_lr: 0.001
+kd_epochs:    20;  kd_lr:    0.0005;  kd_temperature: 1.0
+ft_epochs:    10;  ft_lr:    0.0005
+
+batch_size: 32
+
+broker:          "192.168.0.12"
+port:            1883
+keepalive:       600
+teacher_timeout: 600
+
+device: cpu
+seed:   42
+```
+
+Parâmetros específicos por arquitetura:
+
+| Modelo | Parâmetros extras |
+|--------|-------------------|
+| GRU / LSTM | `rnn_hidden: 128`, `rnn_layers: 2`, `rnn_dropout: 0.3`, `rnn_bidirectional: false` |
+| CNN1D / CNN2D | `cnn_channels: [32, 64, 128]`, `cnn_kernel: 3`, `cnn_dropout: 0.3` |
+| MLP | `mlp_hidden: [128, 64]` |
+
+---
+
+## Pipeline por round (cliente Python)
+
+```
+Round N
+  │
+  ├─ [1] Treino local supervisionado  (D_priv,  local_epochs)
+  ├─ [2] Inferência em D_pub          → publica softmax probs via MQTT
+  ├─ [3] Aguarda teacher_probs        ← recebe agregação do servidor
+  ├─ [4] Knowledge Distillation       (D_pub + teacher_probs, kd_epochs)
+  ├─ [5] Fine-tuning supervisionado   (D_priv,  ft_epochs)
+  └─ [6] Avaliação em D_test + publica done → métricas completas
+```
+
+> **KD Loss**: soft cross-entropy `−Σ teacher_probs · log_p_student · T²`  
+> Numericamente estável: `nan_to_num` + `log_softmax.clamp(min=-100)` + gradient clip (norm=5).
+
+---
+
+## Métricas geradas
+
+O servidor grava dois CSVs em `logs/`:
+
+### `logs/metrics.csv` — por cliente por round
+
+| Campo | Descrição |
+|-------|-----------|
+| `acc_local/kd/ft` | Acurácia no **D_test** após cada fase |
+| `f1_local/kd/ft` | F1 macro no **D_test** após cada fase |
+| `loss_local/kd/ft` | Loss média da última época de cada fase |
+| `t_local/kd/ft_ms` | Duração de cada fase em milissegundos |
+| `delta_acc_kd` | `acc_kd − acc_local` (ganho do KD) |
+| `delta_acc_ft` | `acc_ft − acc_kd` (ganho do fine-tuning) |
+
+> Campos ESP32 (`heap_free`) chegam com valor; campos RPi sem equivalente chegam como `null`.
+
+### `logs/consensus.csv` — por round (agregação global)
+
+| Campo | Descrição |
+|-------|-----------|
+| `entropy_mean/min/max` | Entropia das teacher_probs (↓ = mais confiante) |
+| `kl_mean/max` | KL(cliente ‖ teacher) — divergência do consenso |
+| `cosine_mean/min` | Similaridade cosseno entre logits dos clientes |
+| `t_round_ms` | Duração total do round |
+
+**Convergência esperada**: `kl_mean` cai ~10× em 6 rounds; `cosine_mean` → 1.0.
+
+---
+
+## Identificação de clientes
+
+| ID | Tipo | Modelo | `client_name` |
+|----|------|--------|---------------|
+| 1 | ESP32 | MLP pequeno | `FedKD-ESP32-1` |
+| 2 | ESP32 | MLP médio | `FedKD-ESP32-2` |
+| 3 | ESP32 | MLP maior | `FedKD-ESP32-3` |
+| 4 | RPi/Python | GRU | `FedKD-RPi-4` |
+| 5 | RPi/Python | LSTM | `FedKD-RPi-5` |
+| 6 | RPi/Python | CNN1D | `FedKD-RPi-6` |
+| 7 | RPi/Python | CNN2D | `FedKD-RPi-7` |
+| 8 | RPi/Python | MLP | `FedKD-RPi-8` |
+
+---
+
+## Dicas e troubleshooting
+
+**Acurácia sempre 100%?**  
+O dataset sintético padrão é fácil. Use `--noise_scale 2.5` ou maior para forçar sobreposição entre classes e obter métricas mais informativas.
+
+**NaN na KD loss?**  
+Já tratado no código: `nan_to_num` nos teacher_probs + `log_softmax.clamp(-100)` + gradient clip. Se aparecer, verifique se o servidor está enviando probabilidades (0–1) e não logits brutos.
+
+**Cliente não recebe `cmd/start`?**  
+Verifique se o `client_id` no YAML bate com o registrado no servidor (`fedkd_server.py` → lista de clientes esperados).
+
+**Timeout aguardando teacher_probs?**  
+Aumente `teacher_timeout` no YAML (padrão 600 s para GRU/LSTM). O servidor só envia após receber logits de **todos** os clientes registrados.
+
+**RPi com PyTorch lento?**  
+Normal para modelos recorrentes em CPU. Reduza `local_epochs` / `kd_epochs` ou use `rnn_layers: 1` no YAML.
+
+---
+
+## Referências
+
+- Dataset sintético: gerador HLK-LD2410C em `prepare_dataset.py` (`generate_synthetic_windows`)
+- Protocolo binário: formato Atlântico — float32 row-major, label uint8 (1-based)
+- KD: Hinton et al., *Distilling the Knowledge in a Neural Network* (2015)
+- Agregação: média ponderada de log-probs + softmax com temperatura

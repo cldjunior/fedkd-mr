@@ -1,12 +1,18 @@
-# Dados, saídas e ambientes locais
-datasets/
-data/
-results/
-artifacts/
-metrics/
-.venv/
-venv/
+# Arquivos gerados pelo PlatformIO
+.pio/
+
+# Logs do servidor
+server/logs/
+
+# Cache e ambientes Python
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+
+# Arquivos temporários do Jupyter
 .ipynb_checkpoints/
-.DS_Store
+
+datasets/
+.pio/
+server/logs/

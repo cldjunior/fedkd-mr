@@ -66,12 +66,17 @@ LABEL_MAP     = {c: i + 1 for i, c in enumerate(CLASSES)}  # 1-based (Atlântico
 SEED = 42
 np.random.seed(SEED)
 
-# ── Arquiteturas dos 3 clientes (MLP heterogêneo) ───────────────────────────
-# Refletem os modelos que serão usados no ESP32 (Config.h)
+# ── Arquiteturas dos clientes (MLP heterogêneo) ─────────────────────────────
+# Refletem os modelos que serão usados no dispositivo (Config.h / models.py)
 CLIENT_ARCHITECTURES = {
-    1: (96, 32, 16, 4),   # MLP pequeno
-    2: (96, 48, 24, 4),   # MLP médio
-    3: (96, 64, 32, 4),   # MLP maior (subject to RAM check on device)
+    1: (96, 32, 16, 4),        # ESP32 #1 — MLP pequeno
+    2: (96, 48, 24, 4),        # ESP32 #2 — MLP médio
+    3: (96, 64, 32, 4),        # ESP32 #3 — MLP maior
+    4: (96, 128, 64, 32, 4),   # RPi #4   — GRU  (simula capacidade equivalente)
+    5: (96, 128, 64, 32, 4),   # RPi #5   — LSTM (mesma capacidade que GRU)
+    6: (96, 64, 32, 4),        # RPi #6   — CNN1D (após conv+flatten ≈ MLP médio)
+    7: (96, 96, 48, 4),        # RPi #7   — CNN2D (ligeiramente maior que CNN1D)
+    8: (96, 128, 64, 4),       # RPi #8   — MLP   (mlp_hidden=[128,64])
 }
 
 # ── Gerador sintético de janelas HLK-LD2410C ────────────────────────────────
@@ -285,10 +290,62 @@ def split_dataset(X, y_str, n_clients=3, n_pub_per_class=1, test_ratio=0.25,
                 [0.7, 0.1, 0.1, 0.7],   # cliente 2: EMPT+LEAV dominant
                 [0.2, 0.2, 0.2, 0.2],   # cliente 3: balanced
             ], dtype=float)
+        elif n_clients == 4:
+            # Cliente 4 = RPi: distribuição balanceada com fatia maior
+            # (RPi tem mais dados disponíveis; ~25% de cada classe)
+            fracs = np.array([
+                [0.1, 0.6, 0.6, 0.1],      # cliente 1: STAT+APPR dominant
+                [0.6, 0.1, 0.1, 0.6],      # cliente 2: EMPT+LEAV dominant
+                [0.15, 0.15, 0.15, 0.15],   # cliente 3: balanced (ESP32)
+                [0.25, 0.25, 0.25, 0.25],   # cliente 4 (RPi GRU): balanced, fatia maior
+            ], dtype=float)
+        elif n_clients == 5:
+            # 3 ESP32 + 2 RPi (GRU + LSTM)
+            fracs = np.array([
+                [0.08, 0.50, 0.50, 0.08],   # ESP32 #1: STAT+APPR dominant
+                [0.50, 0.08, 0.08, 0.50],   # ESP32 #2: EMPT+LEAV dominant
+                [0.12, 0.12, 0.12, 0.12],   # ESP32 #3: balanced
+                [0.15, 0.15, 0.15, 0.15],   # RPi #4 (GRU): balanced
+                [0.15, 0.15, 0.15, 0.15],   # RPi #5 (LSTM): balanced
+            ], dtype=float)
+        elif n_clients == 6:
+            # 3 ESP32 + 3 RPi (GRU + LSTM + CNN1D)
+            fracs = np.array([
+                [0.08, 0.46, 0.46, 0.08],   # ESP32 #1: STAT+APPR dominant
+                [0.46, 0.08, 0.08, 0.46],   # ESP32 #2: EMPT+LEAV dominant
+                [0.10, 0.10, 0.10, 0.10],   # ESP32 #3: balanced
+                [0.12, 0.12, 0.12, 0.12],   # RPi #4 (GRU): balanced
+                [0.12, 0.12, 0.12, 0.12],   # RPi #5 (LSTM): balanced
+                [0.12, 0.12, 0.12, 0.12],   # RPi #6 (CNN1D): balanced
+            ], dtype=float)
+        elif n_clients == 7:
+            # 3 ESP32 + 4 RPi (GRU + LSTM + CNN1D + CNN2D)
+            fracs = np.array([
+                [0.07, 0.42, 0.42, 0.07],   # ESP32 #1: STAT+APPR dominant
+                [0.42, 0.07, 0.07, 0.42],   # ESP32 #2: EMPT+LEAV dominant
+                [0.09, 0.09, 0.09, 0.09],   # ESP32 #3: balanced
+                [0.11, 0.11, 0.11, 0.11],   # RPi #4 (GRU): balanced
+                [0.10, 0.10, 0.10, 0.10],   # RPi #5 (LSTM): balanced
+                [0.11, 0.11, 0.11, 0.11],   # RPi #6 (CNN1D): balanced
+                [0.10, 0.10, 0.10, 0.10],   # RPi #7 (CNN2D): balanced
+            ], dtype=float)
+        elif n_clients == 8:
+            # 3 ESP32 + 5 RPi (GRU + LSTM + CNN1D + CNN2D + MLP)
+            fracs = np.array([
+                [0.06, 0.38, 0.38, 0.06],   # ESP32 #1: STAT+APPR dominant
+                [0.38, 0.06, 0.06, 0.38],   # ESP32 #2: EMPT+LEAV dominant
+                [0.08, 0.08, 0.08, 0.08],   # ESP32 #3: balanced
+                [0.12, 0.12, 0.12, 0.12],   # RPi #4 (GRU): balanced
+                [0.09, 0.09, 0.09, 0.09],   # RPi #5 (LSTM): balanced
+                [0.09, 0.09, 0.09, 0.09],   # RPi #6 (CNN1D): balanced
+                [0.09, 0.09, 0.09, 0.09],   # RPi #7 (CNN2D): balanced
+                [0.09, 0.09, 0.09, 0.09],   # RPi #8 (MLP): balanced
+            ], dtype=float)
         else:
-            # n_clients > 3: round-robin IID mas com Dirichlet
+            # n_clients > 8: Dirichlet com seed fixo para reprodutibilidade
+            rng_dirichlet = np.random.RandomState(SEED)
             alpha = 0.5  # baixo alpha → mais heterogêneo
-            fracs_raw = np.random.dirichlet([alpha]*n_clients, size=N_CLASSES).T  # [n_clients, n_classes]
+            fracs_raw = rng_dirichlet.dirichlet([alpha]*n_clients, size=N_CLASSES).T
             fracs = fracs_raw
 
         # Normalizar por coluna para frações somarem 1 por classe
@@ -644,18 +701,30 @@ def main():
         verify_bin(os.path.join(args.output, f"client_{c}", "dataset_priv.bin"), meta)
 
     # ── 8. Resumo ─────────────────────────────────────────────────
+    client_ids = sorted(X_clients_n.keys())
+    esp_ids    = [c for c in client_ids if c <= 3]
+    rpi_ids    = [c for c in client_ids if c >= 4]
+
     print(f"\n{'='*60}")
-    print("Arquivos prontos para o ESP32:")
-    print(f"  Para cada cliente {list(sorted(X_clients_n.keys()))}:")
-    print(f"    output/client_N/dataset_priv.bin  → LittleFS: /dataset_priv.bin")
-    print(f"    output/client_N/metadata.json     → LittleFS: /metadata.json")
-    print(f"  Compartilhado (igual em todos):")
-    print(f"    output/shared/dataset_pub.bin     → LittleFS: /dataset_pub.bin")
+    print("Arquivos prontos:")
+    if esp_ids:
+        print(f"\n  ESP32 — clientes {esp_ids}:")
+        print(f"    output/client_N/dataset_priv.bin  → LittleFS: /dataset_priv.bin")
+        print(f"    output/client_N/metadata.json     → LittleFS: /metadata.json")
+    if rpi_ids:
+        print(f"\n  Raspberry Pi — clientes {rpi_ids}:")
+        for rid in rpi_ids:
+            print(f"    output/client_{rid}/dataset_priv.bin  → rpi_client/data/dataset_priv.bin")
+            print(f"    output/client_{rid}/metadata.json     → rpi_client/data/metadata.json")
+    print(f"\n  Compartilhado (igual em todos os clientes):")
+    print(f"    output/shared/dataset_pub.bin     → LittleFS /dataset_pub.bin  |  rpi_client/data/dataset_pub.bin")
     print(f"    output/shared/metadata.json       (mesmo arquivo)")
     print(f"    output/shared/teacher_probs.bin   → LittleFS: /teacher_probs.bin")
     print(f"    output/shared/teacher_probs_meta.json → LittleFS: /teacher_probs_meta.json")
-    print(f"\nUse o PlatformIO 'Upload Filesystem Image' para gravar em LittleFS.")
-    print("Copie os arquivos do cliente correspondente para a pasta 'data/' do projeto.")
+    if esp_ids:
+        print(f"\nESP32: use o PlatformIO 'Upload Filesystem Image' para gravar em LittleFS.")
+    if rpi_ids:
+        print(f"RPi  : copie os arquivos de output/client_{rpi_ids[0]}/ e output/shared/ para rpi_client/data/")
     print(f"{'='*60}")
 
 

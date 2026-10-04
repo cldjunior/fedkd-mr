@@ -1,0 +1,53 @@
+# =============================================================
+# configs/client_cnn1d.yaml — FedKD-MR RPi  (CNN1D)
+# =============================================================
+# Uso:
+#   python fedkd_client.py --config configs/client_cnn1d.yaml
+# =============================================================
+
+# ── Identificação ─────────────────────────────────────────────
+client_id: 6
+model: cnn1d
+
+# ── Dataset ───────────────────────────────────────────────────
+data_dir:   data/
+train_file: dataset_priv.bin
+pub_file:   dataset_pub.bin
+meta_file:  metadata.json
+
+# ── Janela temporal ───────────────────────────────────────────
+t_window:   8
+n_features: 12
+n_classes:  4
+
+# ── Hiperparâmetros — treino local ────────────────────────────
+local_epochs: 50
+local_lr:     0.001
+
+# ── Hiperparâmetros — Knowledge Distillation ──────────────────
+kd_epochs:      20
+kd_lr:          0.0005
+kd_temperature: 1.0
+
+# ── Hiperparâmetros — Fine-tuning ─────────────────────────────
+ft_epochs: 10
+ft_lr:     0.0005
+
+# ── Batching ──────────────────────────────────────────────────
+batch_size: 32
+
+# ── Arquitetura CNN1D ─────────────────────────────────────────
+# Input: (B, N_FEATURES=12, T=8) — conv temporal
+cnn_channels: [32, 64, 128]
+cnn_kernel:   3
+cnn_dropout:  0.3
+
+# ── MQTT ──────────────────────────────────────────────────────
+broker:          "192.168.0.12"
+port:            1883
+keepalive:       300
+teacher_timeout: 300
+
+# ── Runtime ───────────────────────────────────────────────────
+device: cpu
+seed:   42

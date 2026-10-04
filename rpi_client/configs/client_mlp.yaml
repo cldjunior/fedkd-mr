@@ -1,0 +1,52 @@
+# =============================================================
+# configs/client_mlp.yaml — FedKD-MR RPi  (CLIENT_ID = 4, MLP)
+# =============================================================
+# Uso:
+#   python fedkd_client.py --config configs/client_mlp.yaml
+# Sobrescrita pontual via CLI:
+#   python fedkd_client.py --config configs/client_mlp.yaml --local-epochs 100
+# =============================================================
+
+# ── Identificação ─────────────────────────────────────────────
+client_id: 8
+model: mlp
+
+# ── Dataset ───────────────────────────────────────────────────
+data_dir:   data/
+train_file: dataset_priv.bin
+pub_file:   dataset_pub.bin
+meta_file:  metadata.json
+
+# ── Janela temporal ───────────────────────────────────────────
+t_window:   8
+n_features: 12
+n_classes:  4
+
+# ── Hiperparâmetros — treino local ────────────────────────────
+local_epochs: 50
+local_lr:     0.001
+
+# ── Hiperparâmetros — Knowledge Distillation ──────────────────
+kd_epochs:      20
+kd_lr:          0.0005
+kd_temperature: 1.0
+
+# ── Hiperparâmetros — Fine-tuning ─────────────────────────────
+ft_epochs: 10
+ft_lr:     0.0005
+
+# ── Batching ──────────────────────────────────────────────────
+batch_size: 32
+
+# ── Arquitetura MLP ───────────────────────────────────────────
+mlp_hidden: [128, 64]    # Dimensões das camadas ocultas
+
+# ── MQTT ──────────────────────────────────────────────────────
+broker:          "192.168.0.12"
+port:            1883
+keepalive:       300
+teacher_timeout: 300     # segundos aguardando teacher_probs
+
+# ── Runtime ───────────────────────────────────────────────────
+device: cpu
+seed:   42

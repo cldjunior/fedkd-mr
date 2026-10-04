@@ -1,0 +1,25 @@
+# =============================================================
+# requirements.txt — FedKD-MR Cliente Raspberry Pi
+# =============================================================
+# Instalação:
+#   pip install -r requirements.txt
+#
+# Para Raspberry Pi OS (arm64/armhf), torch pode exigir o wheel
+# específico para ARM. Veja: https://pytorch.org/get-started/locally/
+# Ex. para Pi 4 (aarch64, Python 3.11):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# =============================================================
+
+# ── Core ML ───────────────────────────────────────────────────
+torch>=2.0.0
+
+# ── Dados ─────────────────────────────────────────────────────
+numpy>=1.24.0
+pandas>=2.0.0          # leitura de CSV/Parquet (TabularDataset)
+pyarrow>=14.0.0        # backend Parquet para pandas
+
+# ── Config ────────────────────────────────────────────────────
+pyyaml>=6.0.0          # carregamento de arquivos .yaml
+
+# ── MQTT ──────────────────────────────────────────────────────
+paho-mqtt>=1.6.0       # comunicação com o broker Mosquitto

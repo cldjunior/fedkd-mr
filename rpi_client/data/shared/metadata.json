@@ -1,0 +1,999 @@
+{
+  "label_column": "label",
+  "label_map": {
+    "EMPTY": 1,
+    "STATIONARY": 2,
+    "APPROACHING": 3,
+    "LEAVING": 4
+  },
+  "schema": [
+    {
+      "name": "t0_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 0
+    },
+    {
+      "name": "t0_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 4
+    },
+    {
+      "name": "t0_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 8
+    },
+    {
+      "name": "t0_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 12
+    },
+    {
+      "name": "t0_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 16
+    },
+    {
+      "name": "t0_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 20
+    },
+    {
+      "name": "t0_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 24
+    },
+    {
+      "name": "t0_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 28
+    },
+    {
+      "name": "t0_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 32
+    },
+    {
+      "name": "t0_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 36
+    },
+    {
+      "name": "t0_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 40
+    },
+    {
+      "name": "t0_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 44
+    },
+    {
+      "name": "t1_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 48
+    },
+    {
+      "name": "t1_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 52
+    },
+    {
+      "name": "t1_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 56
+    },
+    {
+      "name": "t1_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 60
+    },
+    {
+      "name": "t1_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 64
+    },
+    {
+      "name": "t1_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 68
+    },
+    {
+      "name": "t1_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 72
+    },
+    {
+      "name": "t1_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 76
+    },
+    {
+      "name": "t1_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 80
+    },
+    {
+      "name": "t1_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 84
+    },
+    {
+      "name": "t1_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 88
+    },
+    {
+      "name": "t1_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 92
+    },
+    {
+      "name": "t2_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 96
+    },
+    {
+      "name": "t2_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 100
+    },
+    {
+      "name": "t2_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 104
+    },
+    {
+      "name": "t2_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 108
+    },
+    {
+      "name": "t2_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 112
+    },
+    {
+      "name": "t2_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 116
+    },
+    {
+      "name": "t2_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 120
+    },
+    {
+      "name": "t2_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 124
+    },
+    {
+      "name": "t2_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 128
+    },
+    {
+      "name": "t2_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 132
+    },
+    {
+      "name": "t2_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 136
+    },
+    {
+      "name": "t2_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 140
+    },
+    {
+      "name": "t3_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 144
+    },
+    {
+      "name": "t3_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 148
+    },
+    {
+      "name": "t3_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 152
+    },
+    {
+      "name": "t3_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 156
+    },
+    {
+      "name": "t3_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 160
+    },
+    {
+      "name": "t3_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 164
+    },
+    {
+      "name": "t3_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 168
+    },
+    {
+      "name": "t3_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 172
+    },
+    {
+      "name": "t3_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 176
+    },
+    {
+      "name": "t3_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 180
+    },
+    {
+      "name": "t3_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 184
+    },
+    {
+      "name": "t3_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 188
+    },
+    {
+      "name": "t4_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 192
+    },
+    {
+      "name": "t4_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 196
+    },
+    {
+      "name": "t4_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 200
+    },
+    {
+      "name": "t4_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 204
+    },
+    {
+      "name": "t4_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 208
+    },
+    {
+      "name": "t4_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 212
+    },
+    {
+      "name": "t4_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 216
+    },
+    {
+      "name": "t4_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 220
+    },
+    {
+      "name": "t4_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 224
+    },
+    {
+      "name": "t4_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 228
+    },
+    {
+      "name": "t4_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 232
+    },
+    {
+      "name": "t4_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 236
+    },
+    {
+      "name": "t5_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 240
+    },
+    {
+      "name": "t5_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 244
+    },
+    {
+      "name": "t5_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 248
+    },
+    {
+      "name": "t5_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 252
+    },
+    {
+      "name": "t5_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 256
+    },
+    {
+      "name": "t5_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 260
+    },
+    {
+      "name": "t5_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 264
+    },
+    {
+      "name": "t5_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 268
+    },
+    {
+      "name": "t5_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 272
+    },
+    {
+      "name": "t5_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 276
+    },
+    {
+      "name": "t5_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 280
+    },
+    {
+      "name": "t5_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 284
+    },
+    {
+      "name": "t6_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 288
+    },
+    {
+      "name": "t6_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 292
+    },
+    {
+      "name": "t6_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 296
+    },
+    {
+      "name": "t6_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 300
+    },
+    {
+      "name": "t6_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 304
+    },
+    {
+      "name": "t6_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 308
+    },
+    {
+      "name": "t6_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 312
+    },
+    {
+      "name": "t6_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 316
+    },
+    {
+      "name": "t6_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 320
+    },
+    {
+      "name": "t6_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 324
+    },
+    {
+      "name": "t6_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 328
+    },
+    {
+      "name": "t6_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 332
+    },
+    {
+      "name": "t7_moving_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 336
+    },
+    {
+      "name": "t7_moving_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 340
+    },
+    {
+      "name": "t7_stationary_distance_cm",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 344
+    },
+    {
+      "name": "t7_stationary_energy",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 348
+    },
+    {
+      "name": "t7_moving_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 352
+    },
+    {
+      "name": "t7_moving_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 356
+    },
+    {
+      "name": "t7_moving_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 360
+    },
+    {
+      "name": "t7_moving_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 364
+    },
+    {
+      "name": "t7_stationary_g0",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 368
+    },
+    {
+      "name": "t7_stationary_g1",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 372
+    },
+    {
+      "name": "t7_stationary_g2",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 376
+    },
+    {
+      "name": "t7_stationary_g3",
+      "type": "float32",
+      "c_type": "float",
+      "bytes": 4,
+      "offset": 380
+    },
+    {
+      "name": "label",
+      "type": "uint8",
+      "c_type": "uint8_t",
+      "bytes": 1,
+      "offset": 384
+    }
+  ],
+  "bytes_per_row": 385,
+  "n_input": 96,
+  "n_classes": 4,
+  "t_window": 8,
+  "n_features_per_step": 12,
+  "feature_columns": [
+    "t0_moving_distance_cm",
+    "t0_moving_energy",
+    "t0_stationary_distance_cm",
+    "t0_stationary_energy",
+    "t0_moving_g0",
+    "t0_moving_g1",
+    "t0_moving_g2",
+    "t0_moving_g3",
+    "t0_stationary_g0",
+    "t0_stationary_g1",
+    "t0_stationary_g2",
+    "t0_stationary_g3",
+    "t1_moving_distance_cm",
+    "t1_moving_energy",
+    "t1_stationary_distance_cm",
+    "t1_stationary_energy",
+    "t1_moving_g0",
+    "t1_moving_g1",
+    "t1_moving_g2",
+    "t1_moving_g3",
+    "t1_stationary_g0",
+    "t1_stationary_g1",
+    "t1_stationary_g2",
+    "t1_stationary_g3",
+    "t2_moving_distance_cm",
+    "t2_moving_energy",
+    "t2_stationary_distance_cm",
+    "t2_stationary_energy",
+    "t2_moving_g0",
+    "t2_moving_g1",
+    "t2_moving_g2",
+    "t2_moving_g3",
+    "t2_stationary_g0",
+    "t2_stationary_g1",
+    "t2_stationary_g2",
+    "t2_stationary_g3",
+    "t3_moving_distance_cm",
+    "t3_moving_energy",
+    "t3_stationary_distance_cm",
+    "t3_stationary_energy",
+    "t3_moving_g0",
+    "t3_moving_g1",
+    "t3_moving_g2",
+    "t3_moving_g3",
+    "t3_stationary_g0",
+    "t3_stationary_g1",
+    "t3_stationary_g2",
+    "t3_stationary_g3",
+    "t4_moving_distance_cm",
+    "t4_moving_energy",
+    "t4_stationary_distance_cm",
+    "t4_stationary_energy",
+    "t4_moving_g0",
+    "t4_moving_g1",
+    "t4_moving_g2",
+    "t4_moving_g3",
+    "t4_stationary_g0",
+    "t4_stationary_g1",
+    "t4_stationary_g2",
+    "t4_stationary_g3",
+    "t5_moving_distance_cm",
+    "t5_moving_energy",
+    "t5_stationary_distance_cm",
+    "t5_stationary_energy",
+    "t5_moving_g0",
+    "t5_moving_g1",
+    "t5_moving_g2",
+    "t5_moving_g3",
+    "t5_stationary_g0",
+    "t5_stationary_g1",
+    "t5_stationary_g2",
+    "t5_stationary_g3",
+    "t6_moving_distance_cm",
+    "t6_moving_energy",
+    "t6_stationary_distance_cm",
+    "t6_stationary_energy",
+    "t6_moving_g0",
+    "t6_moving_g1",
+    "t6_moving_g2",
+    "t6_moving_g3",
+    "t6_stationary_g0",
+    "t6_stationary_g1",
+    "t6_stationary_g2",
+    "t6_stationary_g3",
+    "t7_moving_distance_cm",
+    "t7_moving_energy",
+    "t7_stationary_distance_cm",
+    "t7_stationary_energy",
+    "t7_moving_g0",
+    "t7_moving_g1",
+    "t7_moving_g2",
+    "t7_moving_g3",
+    "t7_stationary_g0",
+    "t7_stationary_g1",
+    "t7_stationary_g2",
+    "t7_stationary_g3"
+  ],
+  "classes": [
+    "EMPTY",
+    "STATIONARY",
+    "APPROACHING",
+    "LEAVING"
+  ],
+  "normalization": {
+    "mins": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "maxs": [
+      423.2862548828125,
+      129.08065795898438,
+      284.9307861328125,
+      119.58210754394531,
+      101.82597351074219,
+      92.9615707397461,
+      95.01203155517578,
+      77.45497131347656,
+      90.43444061279297,
+      82.33197784423828,
+      86.21507263183594,
+      56.02131652832031,
+      372.0882873535156,
+      126.95697021484375,
+      287.0104064941406,
+      122.59097290039062,
+      96.4693832397461,
+      101.95159149169922,
+      81.39942169189453,
+      78.02987670898438,
+      94.51200103759766,
+      76.57665252685547,
+      65.7618179321289,
+      58.98362350463867,
+      319.7019958496094,
+      122.28753662109375,
+      289.43377685546875,
+      122.77825164794922,
+      98.61640930175781,
+      91.51441192626953,
+      81.70381164550781,
+      71.56482696533203,
+      94.45197296142578,
+      77.41818237304688,
+      67.55628204345703,
+      59.11338424682617,
+      271.8671875,
+      125.65190124511719,
+      294.9840393066406,
+      125.47767639160156,
+      106.0898666381836,
+      88.6218032836914,
+      84.71015930175781,
+      79.12408447265625,
+      94.54000091552734,
+      90.49683380126953,
+      67.03214263916016,
+      67.63593292236328,
+      273.8134765625,
+      135.0777587890625,
+      312.1241455078125,
+      121.0265121459961,
+      111.94075012207031,
+      100.33242797851562,
+      86.17636108398438,
+      70.54456329345703,
+      86.21442413330078,
+      76.80165100097656,
+      70.05577850341797,
+      59.3316535949707,
+      316.8277282714844,
+      125.45490264892578,
+      317.6935119628906,
+      119.07258605957031,
+      96.03852081298828,
+      96.8211441040039,
+      92.47077178955078,
+      85.2897720336914,
+      87.71371459960938,
+      76.77957153320312,
+      69.35515594482422,
+      62.146141052246094,
+      381.9172668457031,
+      122.5498275756836,
+      282.21038818359375,
+      117.94440460205078,
+      103.68699645996094,
+      93.8035659790039,
+      82.98473358154297,
+      71.0030517578125,
+      97.38115692138672,
+      83.99996185302734,
+      66.35650634765625,
+      65.77513122558594,
+      410.97979736328125,
+      128.6179962158203,
+      295.3230895996094,
+      124.86064910888672,
+      110.90642547607422,
+      94.45040130615234,
+      83.45580291748047,
+      66.80622100830078,
+      92.51046752929688,
+      79.61238098144531,
+      74.43119812011719,
+      64.25747680664062
+    ]
+  },
+  "rows_pub": 4,
+  "rows_test": 200
+}

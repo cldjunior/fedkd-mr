@@ -81,6 +81,19 @@ struct RunMetrics {
     }
 };
 
+// ── Resultado do pipeline (retornado por run_pipeline()) ─────────────────────
+struct PipelineResult {
+    float         acc_local  = 0.f;   // avaliação pré-KD  (D_priv)
+    float         acc_kd     = 0.f;   // avaliação pós-KD  (D_priv)
+    float         acc_ft     = 0.f;   // avaliação pós-FT  (D_priv)
+    float         f1_local   = 0.f;
+    float         f1_kd      = 0.f;
+    float         f1_ft      = 0.f;
+    unsigned long t_local_ms = 0;     // duração treino local
+    unsigned long t_kd_ms    = 0;     // duração KD  (0 se pulado)
+    unsigned long t_ft_ms    = 0;     // duração FT  (0 se pulado)
+};
+
 // ── Variáveis globais ─────────────────────────────────────────────────────────
 Model* model      = nullptr;  // ← agora é Model*, não NeuralNetwork*
 bool pipeline_done = false;
@@ -543,7 +556,8 @@ static Model* create_model() {
 }
 
 // ── Pipeline principal ───────────────────────────────────────────────────────
-static void run_pipeline() {
+static PipelineResult run_pipeline() {
+    PipelineResult pr;
     print_sep();
     Serial.printf("FedKD-MR — Cliente %s\n", CLIENT_NAME);
     print_sep();
@@ -554,7 +568,7 @@ static void run_pipeline() {
     model = create_model();
     if (!model) {
         Serial.println("[FATAL] Falha ao criar modelo");
-        return;
+        return pr;
     }
     print_mem();
 
@@ -570,6 +584,9 @@ static void run_pipeline() {
 
     RunMetrics eval_pre = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
                                    "Avaliação pré-KD (D_priv)");
+    pr.acc_local  = eval_pre.accuracy();
+    pr.f1_local   = eval_pre.macro_f1();
+    pr.t_local_ms = m_local.ms;
 
     // ── Etapa 2: Knowledge Distillation ──────────────────────────
     print_sep();
@@ -583,10 +600,11 @@ static void run_pipeline() {
     int n_pub = read_n_pub();
 #endif
 
+    RunMetrics m_kd, m_ft;  // timing = 0 se KD/FT forem pulados
     if (n_pub <= 0) {
         Serial.println("[AVISO] n_pub=0 — pulando KD.");
     } else {
-        RunMetrics m_kd = train_kd(
+        m_kd = train_kd(
             *model,
             XY_PUB_PATH, METADATA_JSON_PATH,
             TEACHER_PROBS_PATH, n_pub,
@@ -595,22 +613,31 @@ static void run_pipeline() {
         Serial.printf("  KD concluído em %lums\n", m_kd.ms);
         print_mem();
 
+        RunMetrics eval_kd = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
+                                      "Avaliação pós-KD (D_priv)");
+        pr.acc_kd = eval_kd.accuracy();
+        pr.f1_kd  = eval_kd.macro_f1();
+
         // ── Etapa 3: Fine-tuning ──────────────────────────────────
         print_sep();
         Serial.println("ETAPA 3 — Fine-tuning supervisionado (D_priv)");
-        RunMetrics m_ft = train_supervised(
+        m_ft = train_supervised(
             *model, XY_TRAIN_PATH, METADATA_JSON_PATH,
             FT_EPOCHS, FT_LR_WEIGHTS, FT_LR_BIASES, "Fine-tuning"
         );
         Serial.printf("  Fine-tuning concluído em %lums\n", m_ft.ms);
         print_mem();
     }
+    pr.t_kd_ms = m_kd.ms;
+    pr.t_ft_ms = m_ft.ms;
 
     // ── Avaliação final ───────────────────────────────────────────
     print_sep();
     Serial.println("AVALIAÇÃO FINAL — D_priv");
     RunMetrics eval_post = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
                                     "Avaliação pós-KD (D_priv)");
+    pr.acc_ft = eval_post.accuracy();
+    pr.f1_ft  = eval_post.macro_f1();
 
     print_sep();
     Serial.println("RESUMO");
@@ -624,6 +651,7 @@ static void run_pipeline() {
                   eval_post.macro_f1() - eval_pre.macro_f1());
     print_sep();
     Serial.println("Pipeline concluído. Entrando em modo idle.");
+    return pr;
 }
 
 // ── setup / loop ─────────────────────────────────────────────────────────────
@@ -683,12 +711,23 @@ void loop() {
         g_teacher_received = false;
         int round = g_current_round;
         Serial.printf("\n[MQTT] === Round %d iniciado ===\n", round);
-        run_pipeline();
-        char done_msg[64];
-        snprintf(done_msg, sizeof(done_msg), "{\"status\":\"done\",\"round\":%d}", round);
+        PipelineResult pr = run_pipeline();
+        char done_msg[256];
+        snprintf(done_msg, sizeof(done_msg),
+            "{\"status\":\"done\",\"round\":%d,"
+            "\"acc_local\":%.4f,\"acc_kd\":%.4f,\"acc_ft\":%.4f,"
+            "\"f1_local\":%.4f,\"f1_kd\":%.4f,\"f1_ft\":%.4f,"
+            "\"heap_free\":%u,"
+            "\"t_local_ms\":%lu,\"t_kd_ms\":%lu,\"t_ft_ms\":%lu}",
+            round,
+            pr.acc_local, pr.acc_kd, pr.acc_ft,
+            pr.f1_local,  pr.f1_kd,  pr.f1_ft,
+            (unsigned)esp_get_free_heap_size(),
+            pr.t_local_ms, pr.t_kd_ms, pr.t_ft_ms);
         g_mqtt_client.publish(TOPIC_CMD_PUSH,
                               (uint8_t*)done_msg, (unsigned int)strlen(done_msg), false);
-        Serial.printf("[MQTT] Round %d: 'done' publicado.\n", round);
+        Serial.printf("[MQTT] Round %d: 'done' publicado — acc_local=%.3f acc_ft=%.3f\n",
+                      round, pr.acc_local, pr.acc_ft);
     }
     esp_task_wdt_reset();
     delay(100);
