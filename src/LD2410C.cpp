@@ -3,9 +3,11 @@
  * ==================================================
  * Protocolo binário HLK, Engineering Mode.
  *
- * Estrutura dos frames (Engineering Mode):
- *   [FD FC FB FA] [len_lo len_hi]
- *   [01 00]         ← tipo: engineering (0x0002 = básico)
+ * ── DOIS tipos de frame com HEADERS DIFERENTES ──────────────────────────────
+ *
+ * 1. Frames de DADOS (reporting frames) — parser em update():
+ *   [F4 F3 F2 F1] [len_lo len_hi]
+ *   [01 00]         ← tipo: engineering
  *   [AA]            ← marcador de início de dados
  *   [target_state]
  *   [mov_dist_lo mov_dist_hi] [mov_energy]
@@ -13,11 +15,14 @@
  *   [detect_dist_lo detect_dist_hi]
  *   [mg0..mg8]      ← 9 bytes de energia por gate móvel
  *   [sg0..sg8]      ← 9 bytes de energia por gate estático
- *   [55] [00]       ← tail + checksum (checksum não verificado nesta impl.)
- *   [04 03 02 01]
+ *   [55] [00]       ← tail + checksum (não verificado)
+ *   [F8 F7 F6 F5]
  *
- * Estrutura de frame básico (sem Engineering Mode):
- *   Mesmo que acima mas tipo = [02 00], sem bytes de gate, len total menor.
+ *   Frame básico (sem Engineering Mode): tipo = [02 00], sem gates.
+ *
+ * 2. Frames de CONFIGURAÇÃO (comandos / ACKs) — usados em _sendCmd/_waitAck:
+ *   [FD FC FB FA] [len_lo len_hi] [payload] [04 03 02 01]
+ *   ↑ Header DIFERENTE do header de dados — não confundir!
  *
  * Referência: documentação HLK-LD2410C v1.02 + biblioteca ncmreynolds/LD2410.
  */
@@ -28,42 +33,63 @@
 static const uint8_t FRAME_HEADER[4] = { 0xFD, 0xFC, 0xFB, 0xFA };
 static const uint8_t FRAME_FOOTER[4] = { 0x04, 0x03, 0x02, 0x01 };
 
-// Comprimentos esperados de dados (entre len e footer, excluindo próprio len)
-static const uint16_t ENG_FRAME_DATA_LEN   = 32;   // Engineering Mode
-static const uint16_t BASIC_FRAME_DATA_LEN = 14;   // Modo básico
+// Comprimentos esperados de dados (campo len do frame, inclui type + dados + tail)
+// Frame de Engineering Mode real do LD2410C:
+//   type(1) + AA(1) + state(1) + mov_dist(2) + mov_e(1) + stat_dist(2) + stat_e(1)
+//   + det_dist(2) + mg0-8(9) + sg0-8(9) + extras(4) + tail(1) + check(1) = 35
+static const uint16_t ENG_FRAME_DATA_LEN   = 35;   // Engineering Mode (LD2410C real)
+static const uint16_t BASIC_FRAME_DATA_LEN = 13;   // Modo básico
 
-// Offsets dentro de _buf (após os 2 bytes de tipo)
+// Offsets dentro de _buf — ATENÇÃO: tipo é 1 byte (não 2!)
+// O frame real é: [type_lo=01] [AA] [state] [mov_dist x2] [mov_e] ...
+// Não existe byte type_hi=00 no frame de dados do LD2410C.
 static const int OFF_TYPE_LO = 0;
-static const int OFF_TYPE_HI = 1;
-static const int OFF_HEAD    = 2;   // deve ser 0xAA
-static const int OFF_STATE   = 3;
-static const int OFF_MOV_LO  = 4;
-static const int OFF_MOV_HI  = 5;
-static const int OFF_MOV_E   = 6;
-static const int OFF_STAT_LO = 7;
-static const int OFF_STAT_HI = 8;
-static const int OFF_STAT_E  = 9;
-static const int OFF_DET_LO  = 10;
-static const int OFF_DET_HI  = 11;
-static const int OFF_MGATE   = 12;  // [12..20] moving gates 0-8
-static const int OFF_SGATE   = 21;  // [21..29] static gates 0-8
-// [30] = 0x55 tail, [31] = 0x00 check
+static const int OFF_HEAD    = 1;   // deve ser 0xAA
+static const int OFF_STATE   = 2;
+static const int OFF_MOV_LO  = 3;
+static const int OFF_MOV_HI  = 4;
+static const int OFF_MOV_E   = 5;
+static const int OFF_STAT_LO = 6;
+static const int OFF_STAT_HI = 7;
+static const int OFF_STAT_E  = 8;
+static const int OFF_DET_LO  = 9;
+static const int OFF_DET_HI  = 10;
+static const int OFF_MGATE   = 11;  // [11..19] moving gates 0-8
+static const int OFF_SGATE   = 20;  // [20..28] static gates 0-8
+// [29..32] = 4 bytes extras do LD2410C (ignorados)
+// [33] = 0x55 tail, [34] = 0x00 check
 
 // ── begin ─────────────────────────────────────────────────────────────────────
 bool LD2410C::begin(int rx_pin, int tx_pin, uint32_t baud) {
     _serial.begin(baud, SERIAL_8N1, rx_pin, tx_pin);
-    delay(100);
+    delay(200);
 
-    // Tenta habilitar Engineering Mode até 3 vezes
-    for (int attempt = 1; attempt <= 3; attempt++) {
+    // Tenta habilitar Engineering Mode até 5 vezes, verificando com frames reais
+    for (int attempt = 1; attempt <= 5; attempt++) {
         if (enableEngineeringMode()) {
-            Serial.printf("[LD2410C] Engineering Mode habilitado (tentativa %d)\n", attempt);
-            return true;
+            // ACK recebido — verifica se os frames de dados também são Engineering Mode
+            uint32_t deadline = millis() + 2000;
+            int eng_count = 0;
+            while (millis() < deadline) {
+                if (update() && _frame.valid) {
+                    if (_frame.engineering) {
+                        if (++eng_count >= 5) {
+                            Serial.printf("[LD2410C] Engineering Mode confirmado por frames (tentativa %d)\n", attempt);
+                            return true;
+                        }
+                    } else {
+                        eng_count = 0;  // frame Basic — reseta contagem
+                    }
+                }
+            }
+            Serial.printf("[LD2410C] Tentativa %d: ACK ok, mas frames ainda Basic — retentando\n", attempt);
+        } else {
+            Serial.printf("[LD2410C] Tentativa %d: ACK timeout\n", attempt);
         }
-        delay(200);
+        delay(500);
     }
     Serial.println("[LD2410C] AVISO: Engineering Mode não confirmado — modo básico ativo");
-    return false;  // sensor pode ainda estar funcionando em modo básico
+    return false;
 }
 
 // ── enableEngineeringMode ─────────────────────────────────────────────────────
@@ -116,21 +142,21 @@ bool LD2410C::update() {
         uint8_t b = _serial.read();
 
         switch (_state) {
-            // ── Sincronização do header: FD FC FB FA ──────────────────────
+            // ── Sincronização do header de DADOS: F4 F3 F2 F1 ────────────
             case 0:
-                if (b == 0xFD) _state = 1;
+                if (b == 0xF4) _state = 1;
                 break;
             case 1:
-                if (b == 0xFC) _state = 2;
-                else _state = (b == 0xFD) ? 1 : 0;
+                if (b == 0xF3) _state = 2;
+                else _state = (b == 0xF4) ? 1 : 0;
                 break;
             case 2:
-                if (b == 0xFB) _state = 3;
-                else _state = (b == 0xFD) ? 1 : 0;
+                if (b == 0xF2) _state = 3;
+                else _state = (b == 0xF4) ? 1 : 0;
                 break;
             case 3:
-                if (b == 0xFA) _state = 4;
-                else _state = (b == 0xFD) ? 1 : 0;
+                if (b == 0xF1) _state = 4;
+                else _state = (b == 0xF4) ? 1 : 0;
                 break;
 
             // ── Leitura do campo length (2 bytes, little-endian) ──────────
@@ -155,19 +181,19 @@ bool LD2410C::update() {
                 if (_data_idx >= _data_len) _state = 7;
                 break;
 
-            // ── Sincronização do footer: 04 03 02 01 ─────────────────────
+            // ── Sincronização do footer de DADOS: F8 F7 F6 F5 ───────────
             case 7:
-                _state = (b == 0x04) ? 8 : 0;
+                _state = (b == 0xF8) ? 8 : 0;
                 break;
             case 8:
-                _state = (b == 0x03) ? 9 : 0;
+                _state = (b == 0xF7) ? 9 : 0;
                 break;
             case 9:
-                _state = (b == 0x02) ? 10 : 0;
+                _state = (b == 0xF6) ? 10 : 0;
                 break;
             case 10:
                 _state = 0;
-                if (b == 0x01) {
+                if (b == 0xF5) {
                     return _parseBuffer();
                 }
                 break;
@@ -207,6 +233,11 @@ void LD2410C::fillFeatureVector(float feat[12]) const {
 
 // ── _sendCmd ──────────────────────────────────────────────────────────────────
 bool LD2410C::_sendCmd(const uint8_t* payload, uint8_t len) {
+    // Aguarda o sensor terminar qualquer frame em andamento e descarta o buffer.
+    // Isso evita que bytes de frame de dados interfiram na detecção do ACK.
+    delay(30);
+    while (_serial.available()) _serial.read();
+
     // Frame de configuração: [header(4)] [len_lo len_hi] [payload] [footer(4)]
     uint8_t frame[16] = {};
     frame[0] = 0xFD; frame[1] = 0xFC; frame[2] = 0xFB; frame[3] = 0xFA;

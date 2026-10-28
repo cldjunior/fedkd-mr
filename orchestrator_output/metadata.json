@@ -1,0 +1,701 @@
+{
+  "bytes_per_row": 385,
+  "label_column": "label",
+  "label_map": {
+    "1": "EMPTY",
+    "2": "STATIONARY",
+    "3": "APPROACHING",
+    "4": "LEAVING"
+  },
+  "n_classes": 4,
+  "n_pub": 20,
+  "schema": [
+    {
+      "name": "t0_moving_dist",
+      "type": "float32",
+      "offset": 0
+    },
+    {
+      "name": "t0_moving_energy",
+      "type": "float32",
+      "offset": 4
+    },
+    {
+      "name": "t0_stationary_dist",
+      "type": "float32",
+      "offset": 8
+    },
+    {
+      "name": "t0_stationary_energy",
+      "type": "float32",
+      "offset": 12
+    },
+    {
+      "name": "t0_moving_g0",
+      "type": "float32",
+      "offset": 16
+    },
+    {
+      "name": "t0_moving_g1",
+      "type": "float32",
+      "offset": 20
+    },
+    {
+      "name": "t0_moving_g2",
+      "type": "float32",
+      "offset": 24
+    },
+    {
+      "name": "t0_moving_g3",
+      "type": "float32",
+      "offset": 28
+    },
+    {
+      "name": "t0_stationary_g0",
+      "type": "float32",
+      "offset": 32
+    },
+    {
+      "name": "t0_stationary_g1",
+      "type": "float32",
+      "offset": 36
+    },
+    {
+      "name": "t0_stationary_g2",
+      "type": "float32",
+      "offset": 40
+    },
+    {
+      "name": "t0_stationary_g3",
+      "type": "float32",
+      "offset": 44
+    },
+    {
+      "name": "t1_moving_dist",
+      "type": "float32",
+      "offset": 48
+    },
+    {
+      "name": "t1_moving_energy",
+      "type": "float32",
+      "offset": 52
+    },
+    {
+      "name": "t1_stationary_dist",
+      "type": "float32",
+      "offset": 56
+    },
+    {
+      "name": "t1_stationary_energy",
+      "type": "float32",
+      "offset": 60
+    },
+    {
+      "name": "t1_moving_g0",
+      "type": "float32",
+      "offset": 64
+    },
+    {
+      "name": "t1_moving_g1",
+      "type": "float32",
+      "offset": 68
+    },
+    {
+      "name": "t1_moving_g2",
+      "type": "float32",
+      "offset": 72
+    },
+    {
+      "name": "t1_moving_g3",
+      "type": "float32",
+      "offset": 76
+    },
+    {
+      "name": "t1_stationary_g0",
+      "type": "float32",
+      "offset": 80
+    },
+    {
+      "name": "t1_stationary_g1",
+      "type": "float32",
+      "offset": 84
+    },
+    {
+      "name": "t1_stationary_g2",
+      "type": "float32",
+      "offset": 88
+    },
+    {
+      "name": "t1_stationary_g3",
+      "type": "float32",
+      "offset": 92
+    },
+    {
+      "name": "t2_moving_dist",
+      "type": "float32",
+      "offset": 96
+    },
+    {
+      "name": "t2_moving_energy",
+      "type": "float32",
+      "offset": 100
+    },
+    {
+      "name": "t2_stationary_dist",
+      "type": "float32",
+      "offset": 104
+    },
+    {
+      "name": "t2_stationary_energy",
+      "type": "float32",
+      "offset": 108
+    },
+    {
+      "name": "t2_moving_g0",
+      "type": "float32",
+      "offset": 112
+    },
+    {
+      "name": "t2_moving_g1",
+      "type": "float32",
+      "offset": 116
+    },
+    {
+      "name": "t2_moving_g2",
+      "type": "float32",
+      "offset": 120
+    },
+    {
+      "name": "t2_moving_g3",
+      "type": "float32",
+      "offset": 124
+    },
+    {
+      "name": "t2_stationary_g0",
+      "type": "float32",
+      "offset": 128
+    },
+    {
+      "name": "t2_stationary_g1",
+      "type": "float32",
+      "offset": 132
+    },
+    {
+      "name": "t2_stationary_g2",
+      "type": "float32",
+      "offset": 136
+    },
+    {
+      "name": "t2_stationary_g3",
+      "type": "float32",
+      "offset": 140
+    },
+    {
+      "name": "t3_moving_dist",
+      "type": "float32",
+      "offset": 144
+    },
+    {
+      "name": "t3_moving_energy",
+      "type": "float32",
+      "offset": 148
+    },
+    {
+      "name": "t3_stationary_dist",
+      "type": "float32",
+      "offset": 152
+    },
+    {
+      "name": "t3_stationary_energy",
+      "type": "float32",
+      "offset": 156
+    },
+    {
+      "name": "t3_moving_g0",
+      "type": "float32",
+      "offset": 160
+    },
+    {
+      "name": "t3_moving_g1",
+      "type": "float32",
+      "offset": 164
+    },
+    {
+      "name": "t3_moving_g2",
+      "type": "float32",
+      "offset": 168
+    },
+    {
+      "name": "t3_moving_g3",
+      "type": "float32",
+      "offset": 172
+    },
+    {
+      "name": "t3_stationary_g0",
+      "type": "float32",
+      "offset": 176
+    },
+    {
+      "name": "t3_stationary_g1",
+      "type": "float32",
+      "offset": 180
+    },
+    {
+      "name": "t3_stationary_g2",
+      "type": "float32",
+      "offset": 184
+    },
+    {
+      "name": "t3_stationary_g3",
+      "type": "float32",
+      "offset": 188
+    },
+    {
+      "name": "t4_moving_dist",
+      "type": "float32",
+      "offset": 192
+    },
+    {
+      "name": "t4_moving_energy",
+      "type": "float32",
+      "offset": 196
+    },
+    {
+      "name": "t4_stationary_dist",
+      "type": "float32",
+      "offset": 200
+    },
+    {
+      "name": "t4_stationary_energy",
+      "type": "float32",
+      "offset": 204
+    },
+    {
+      "name": "t4_moving_g0",
+      "type": "float32",
+      "offset": 208
+    },
+    {
+      "name": "t4_moving_g1",
+      "type": "float32",
+      "offset": 212
+    },
+    {
+      "name": "t4_moving_g2",
+      "type": "float32",
+      "offset": 216
+    },
+    {
+      "name": "t4_moving_g3",
+      "type": "float32",
+      "offset": 220
+    },
+    {
+      "name": "t4_stationary_g0",
+      "type": "float32",
+      "offset": 224
+    },
+    {
+      "name": "t4_stationary_g1",
+      "type": "float32",
+      "offset": 228
+    },
+    {
+      "name": "t4_stationary_g2",
+      "type": "float32",
+      "offset": 232
+    },
+    {
+      "name": "t4_stationary_g3",
+      "type": "float32",
+      "offset": 236
+    },
+    {
+      "name": "t5_moving_dist",
+      "type": "float32",
+      "offset": 240
+    },
+    {
+      "name": "t5_moving_energy",
+      "type": "float32",
+      "offset": 244
+    },
+    {
+      "name": "t5_stationary_dist",
+      "type": "float32",
+      "offset": 248
+    },
+    {
+      "name": "t5_stationary_energy",
+      "type": "float32",
+      "offset": 252
+    },
+    {
+      "name": "t5_moving_g0",
+      "type": "float32",
+      "offset": 256
+    },
+    {
+      "name": "t5_moving_g1",
+      "type": "float32",
+      "offset": 260
+    },
+    {
+      "name": "t5_moving_g2",
+      "type": "float32",
+      "offset": 264
+    },
+    {
+      "name": "t5_moving_g3",
+      "type": "float32",
+      "offset": 268
+    },
+    {
+      "name": "t5_stationary_g0",
+      "type": "float32",
+      "offset": 272
+    },
+    {
+      "name": "t5_stationary_g1",
+      "type": "float32",
+      "offset": 276
+    },
+    {
+      "name": "t5_stationary_g2",
+      "type": "float32",
+      "offset": 280
+    },
+    {
+      "name": "t5_stationary_g3",
+      "type": "float32",
+      "offset": 284
+    },
+    {
+      "name": "t6_moving_dist",
+      "type": "float32",
+      "offset": 288
+    },
+    {
+      "name": "t6_moving_energy",
+      "type": "float32",
+      "offset": 292
+    },
+    {
+      "name": "t6_stationary_dist",
+      "type": "float32",
+      "offset": 296
+    },
+    {
+      "name": "t6_stationary_energy",
+      "type": "float32",
+      "offset": 300
+    },
+    {
+      "name": "t6_moving_g0",
+      "type": "float32",
+      "offset": 304
+    },
+    {
+      "name": "t6_moving_g1",
+      "type": "float32",
+      "offset": 308
+    },
+    {
+      "name": "t6_moving_g2",
+      "type": "float32",
+      "offset": 312
+    },
+    {
+      "name": "t6_moving_g3",
+      "type": "float32",
+      "offset": 316
+    },
+    {
+      "name": "t6_stationary_g0",
+      "type": "float32",
+      "offset": 320
+    },
+    {
+      "name": "t6_stationary_g1",
+      "type": "float32",
+      "offset": 324
+    },
+    {
+      "name": "t6_stationary_g2",
+      "type": "float32",
+      "offset": 328
+    },
+    {
+      "name": "t6_stationary_g3",
+      "type": "float32",
+      "offset": 332
+    },
+    {
+      "name": "t7_moving_dist",
+      "type": "float32",
+      "offset": 336
+    },
+    {
+      "name": "t7_moving_energy",
+      "type": "float32",
+      "offset": 340
+    },
+    {
+      "name": "t7_stationary_dist",
+      "type": "float32",
+      "offset": 344
+    },
+    {
+      "name": "t7_stationary_energy",
+      "type": "float32",
+      "offset": 348
+    },
+    {
+      "name": "t7_moving_g0",
+      "type": "float32",
+      "offset": 352
+    },
+    {
+      "name": "t7_moving_g1",
+      "type": "float32",
+      "offset": 356
+    },
+    {
+      "name": "t7_moving_g2",
+      "type": "float32",
+      "offset": 360
+    },
+    {
+      "name": "t7_moving_g3",
+      "type": "float32",
+      "offset": 364
+    },
+    {
+      "name": "t7_stationary_g0",
+      "type": "float32",
+      "offset": 368
+    },
+    {
+      "name": "t7_stationary_g1",
+      "type": "float32",
+      "offset": 372
+    },
+    {
+      "name": "t7_stationary_g2",
+      "type": "float32",
+      "offset": 376
+    },
+    {
+      "name": "t7_stationary_g3",
+      "type": "float32",
+      "offset": 380
+    },
+    {
+      "name": "label",
+      "type": "uint8",
+      "offset": 384
+    }
+  ],
+  "normalization": {
+    "method": "firmware_scale",
+    "note": "Values already divided by MAX_DIST=500 / MAX_ENERGY=100 in firmware",
+    "mins": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "maxs": [
+      0.9387288093566895,
+      1.0,
+      0.815108060836792,
+      1.0,
+      0.6929503083229065,
+      0.8432905673980713,
+      1.0,
+      1.0,
+      0.7625930309295654,
+      0.8337789177894592,
+      0.8473654389381409,
+      0.8815557360649109,
+      0.9670276045799255,
+      1.0,
+      0.7464836239814758,
+      1.0,
+      0.9077469110488892,
+      0.731921911239624,
+      1.0,
+      1.0,
+      0.7952117323875427,
+      0.7462255358695984,
+      0.8196332454681396,
+      0.7173946499824524,
+      0.9878153800964355,
+      1.0,
+      0.7576820254325867,
+      1.0,
+      0.8843056559562683,
+      0.9995151162147522,
+      1.0,
+      1.0,
+      0.8074564337730408,
+      0.7169585824012756,
+      0.843377947807312,
+      0.761147141456604,
+      0.9904225468635559,
+      1.0,
+      0.75,
+      1.0,
+      0.7470529079437256,
+      0.8430626392364502,
+      1.0,
+      1.0,
+      0.6614655256271362,
+      0.7100318670272827,
+      0.6698209643363953,
+      0.47381722927093506,
+      0.9917240142822266,
+      1.0,
+      0.7400000095367432,
+      1.0,
+      0.7102933526039124,
+      0.8204634785652161,
+      1.0,
+      1.0,
+      0.7062264084815979,
+      0.8214733600616455,
+      0.7420898675918579,
+      0.6089085936546326,
+      0.9016243815422058,
+      1.0,
+      0.7839999794960022,
+      1.0,
+      0.8935195207595825,
+      0.9608553051948547,
+      1.0,
+      1.0,
+      0.8700674772262573,
+      0.8739045262336731,
+      1.0,
+      0.6545413732528687,
+      0.9344003200531006,
+      1.0,
+      0.8324259519577026,
+      1.0,
+      0.7535645365715027,
+      0.8867179751396179,
+      1.0,
+      1.0,
+      0.9335190653800964,
+      0.9228842258453369,
+      0.8892541527748108,
+      0.505064845085144,
+      0.9317229390144348,
+      1.0,
+      0.8160628080368042,
+      1.0,
+      0.7661610245704651,
+      0.8139297366142273,
+      1.0,
+      1.0,
+      1.0,
+      0.5904158353805542,
+      0.848726749420166,
+      0.4240853190422058
+    ]
+  },
+  "generated_by": "fedkd_orchestrator.py",
+  "generated_at": "2026-10-28T01:15:43"
+}

@@ -490,7 +490,7 @@
                 "ENABLE_MQTT",
                 "WIFI_SSID=\"CLARO_8EF8BC\"",
                 "WIFI_PASSWORD=\"h7yhAHN#YT\"",
-                "MQTT_BROKER=\"192.168.0.12\"",
+                "MQTT_BROKER=\"192.168.0.14\"",
                 "MQTT_PORT=1883",
                 "LOCAL_EPOCHS=30",
                 "LOCAL_LR_WEIGHTS=0.003f",

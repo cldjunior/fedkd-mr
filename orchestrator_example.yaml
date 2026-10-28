@@ -1,0 +1,70 @@
+# orchestrator_example.yaml — Configuração do FedKD-MR Orchestrator
+# =====================================================================
+# Ajuste as portas Serial, caminhos e parâmetros antes de usar.
+#
+# Uso:
+#   python fedkd_orchestrator.py --config orchestrator_example.yaml
+#   python fedkd_orchestrator.py --config orchestrator_example.yaml --skip-flash
+#   python fedkd_orchestrator.py --config orchestrator_example.yaml --dry-run
+
+# ── Clientes ESP32 ────────────────────────────────────────────────────────────
+clients:
+  - client_id: 1
+    client_name: "esp32_c1"      # deve bater com CLIENT_NAME em Config.h
+    port: "/dev/ttyUSB1"         # Linux: /dev/ttyUSBx  |  Mac: /dev/cu.usbserial-x
+    env: "mlp"                   # PlatformIO env: mlp, cnn1d, ou gru
+  - client_id: 2
+    client_name: "esp32_c2"
+    port: "/dev/ttyUSB2"
+    env: "cnn1d"
+  - client_id: 3
+    client_name: "esp32_c3"
+    port: "/dev/ttyUSB3"
+    env: "gru"
+  # Adicione até 8 clientes conforme necessário:
+  # - client_id: 4
+  #   client_name: "esp32_c4"
+  #   port: "/dev/ttyUSB3"
+  #   env: "mlp"
+
+# ── Broker MQTT ───────────────────────────────────────────────────────────────
+broker:
+  host: "192.168.0.12"
+  port: 1883
+
+# ── Caminhos ──────────────────────────────────────────────────────────────────
+project_dir: "/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/"                 # raiz do projeto PlatformIO (onde está platformio.ini)
+server_script: "fedkd_server.py" # NÃO modificar este script
+
+# Diretório onde o orquestrador salva os arquivos compartilhados gerados.
+# Será criado automaticamente se não existir.
+output_dir: "orchestrator_output"
+
+# ── Parâmetros de coleta / geração ────────────────────────────────────────────
+serial_baud: 115200              # baud rate da USB Serial do ESP32
+n_pub_per_class: 5               # amostras por classe para D_pub (ex: 5 × 4 = 20 total)
+n_classes: 4                     # número de classes (EMPTY/STATIONARY/APPROACHING/LEAVING)
+temperature: 2.0                 # temperatura de distilação (Hinton et al. 2015)
+
+# Arquitetura do MLP sklearn usado para gerar teacher_probs.
+# Treinado uma vez por cliente e depois descartado (só o output importa).
+teacher_mlp:
+  hidden_layer_sizes: [64, 32]
+  activation: "relu"
+  max_iter: 300
+  random_state: 42
+
+# ── Federação (parâmetros passados ao fedkd_server.py) ───────────────────────
+federation:
+  rounds: null                   # null = modo contínuo; inteiro = N rounds fixos
+  timeout: 120                   # segundos de timeout esperando logits
+  inter_round_s: 5.0             # intervalo entre rounds automáticos
+
+# ── Opções de transferência serial ───────────────────────────────────────────
+transfer:
+  export_timeout_s: 60           # timeout exportando dataset_priv.bin de cada ESP32
+  upload_timeout_s: 120          # timeout total do upload por arquivo
+  inter_line_ms: 10              # delay entre linhas hex no upload (flow control)
+  hex_line_bytes: 32             # bytes por linha hex (= 64 chars hex) no upload
+  open_retry_count: 3            # tentativas de abertura da porta Serial
+  open_retry_delay_s: 2          # espera entre tentativas
