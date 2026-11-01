@@ -17,15 +17,19 @@
  * BPTT através de T=8 timesteps.
  * Sem dropout (treino on-device).
  *
- * Memória estimada (float32):
- *   Wz/Wr/Wh: 3 × (12×64) = 2 304 f
- *   Uz/Ur/Uh: 3 × (64×64) = 12 288 f
- *   bz/br/bh: 3 × 64       =   192 f
- *   Dense W:  64×4          =   256 f
- *   Total:   ~59 KB  — ok para ESP32-S3 com PS-RAM ou ~320 KB heap padrão
+ * Formato de serialização (saveWeights / loadWeights):
+ *   [4 bytes] magic = 0x47525531  ('GRU1')
+ *   Wz[64][12], Wr[64][12], Wh[64][12]  → 3 × 3072 = 9216 bytes
+ *   Uz[64][64], Ur[64][64], Uh[64][64]  → 3 × 16384 = 49152 bytes
+ *   bz[64], br[64], bh[64]              → 3 × 256 = 768 bytes
+ *   Wd[4][64], bd[4]                    → 1024 + 16 = 1040 bytes
+ *   Total: ~60 KB
  */
 
 #include "Model.h"
+
+// Magic para validação do arquivo de pesos GRU
+static constexpr uint32_t GRU_WEIGHT_MAGIC = 0x47525531u;  // 'GRU1'
 
 // ── Dimensões ─────────────────────────────────────────────────────────────────
 static const int GRU_T   = 8;    // T_WINDOW
@@ -36,11 +40,8 @@ static const int GRU_CLS = N_CLASSES; // 4
 class GRUModel : public Model {
 public:
     // ── Parâmetros GRU ────────────────────────────────────────────────────────
-    // Matrizes de entrada [hidden × input]
     float Wz[GRU_H][GRU_IN], Wr[GRU_H][GRU_IN], Wh[GRU_H][GRU_IN];
-    // Matrizes recorrentes [hidden × hidden]
     float Uz[GRU_H][GRU_H],  Ur[GRU_H][GRU_H],  Uh[GRU_H][GRU_H];
-    // Biases
     float bz[GRU_H], br[GRU_H], bh[GRU_H];
 
     // ── Camada densa final ────────────────────────────────────────────────────
@@ -48,12 +49,12 @@ public:
     float bd[GRU_CLS];
 
     // ── Activações por timestep (para BPTT) ──────────────────────────────────
-    float z_t[GRU_T][GRU_H];   // update gate (após sigmoid)
-    float r_t[GRU_T][GRU_H];   // reset gate  (após sigmoid)
-    float hc_t[GRU_T][GRU_H];  // candidate hidden state (após tanh)
-    float h_t[GRU_T][GRU_H];   // hidden state
-    float h_prev[GRU_T][GRU_H];// h_{t-1} para cada t (salvo durante forward)
-    float r_h[GRU_T][GRU_H];   // r_t ⊙ h_{t-1} (para BPTT de Wh/Uh)
+    float z_t[GRU_T][GRU_H];
+    float r_t[GRU_T][GRU_H];
+    float hc_t[GRU_T][GRU_H];
+    float h_t[GRU_T][GRU_H];
+    float h_prev[GRU_T][GRU_H];
+    float r_h[GRU_T][GRU_H];
 
     // ── Entrada salva (para BPTT) ─────────────────────────────────────────────
     float x_seq[GRU_T][GRU_IN];
@@ -95,21 +96,16 @@ public:
     // ── Interface Model ──────────────────────────────────────────────────────
 
     float* feedForward(const float* x) override {
-        // Reshape x[96] → x_seq[8][12]
         for (int t = 0; t < GRU_T; t++)
             for (int c = 0; c < GRU_IN; c++)
                 x_seq[t][c] = x[t * GRU_IN + c];
 
-        // GRU forward através de T timesteps
-        float h[GRU_H] = {};  // h_0 = zeros
+        float h[GRU_H] = {};
 
         for (int t = 0; t < GRU_T; t++) {
             const float* xt = x_seq[t];
-
-            // Salva h_{t-1}
             for (int i = 0; i < GRU_H; i++) h_prev[t][i] = h[i];
 
-            // Update gate: z = σ(Wz·x + Uz·h + bz)
             for (int i = 0; i < GRU_H; i++) {
                 float s = bz[i];
                 for (int j = 0; j < GRU_IN; j++) s += Wz[i][j] * xt[j];
@@ -117,7 +113,6 @@ public:
                 z_t[t][i] = sigmoid(s);
             }
 
-            // Reset gate: r = σ(Wr·x + Ur·h + br)
             for (int i = 0; i < GRU_H; i++) {
                 float s = br[i];
                 for (int j = 0; j < GRU_IN; j++) s += Wr[i][j] * xt[j];
@@ -125,10 +120,8 @@ public:
                 r_t[t][i] = sigmoid(s);
             }
 
-            // r ⊙ h_{t-1}
             for (int i = 0; i < GRU_H; i++) r_h[t][i] = r_t[t][i] * h[i];
 
-            // Candidate: h̃ = tanh(Wh·x + Uh·(r⊙h) + bh)
             for (int i = 0; i < GRU_H; i++) {
                 float s = bh[i];
                 for (int j = 0; j < GRU_IN; j++) s += Wh[i][j] * xt[j];
@@ -136,14 +129,12 @@ public:
                 hc_t[t][i] = tanhf(s);
             }
 
-            // New hidden: h = z ⊙ h_old + (1-z) ⊙ h̃
             for (int i = 0; i < GRU_H; i++) {
                 h_t[t][i] = z_t[t][i] * h[i] + (1.f - z_t[t][i]) * hc_t[t][i];
                 h[i] = h_t[t][i];
             }
         }
 
-        // Dense na última hidden state h_{T-1}
         for (int o = 0; o < GRU_CLS; o++) {
             float s = bd[o];
             for (int j = 0; j < GRU_H; j++) s += Wd[o][j] * h[j];
@@ -154,7 +145,6 @@ public:
     }
 
     void backProp(const float* y_target) override {
-        // ── Gradiente final: dL/dprobs (Softmax+CE) ──────────────────────────
         float dLogits[GRU_CLS];
         float sq_err = 0.f;
         for (int k = 0; k < GRU_CLS; k++) {
@@ -164,11 +154,9 @@ public:
         }
         sum_sq_err += sq_err;
 
-        // Última hidden state
         const float* hT = h_t[GRU_T - 1];
 
-        // ── Dense backward ────────────────────────────────────────────────────
-        float dH[GRU_H] = {};  // gradiente que chega na hidden state final
+        float dH[GRU_H] = {};
         for (int o = 0; o < GRU_CLS; o++) {
             bd[o] -= lr_b * dLogits[o];
             for (int j = 0; j < GRU_H; j++) {
@@ -177,35 +165,30 @@ public:
             }
         }
 
-        // ── BPTT pela sequência ───────────────────────────────────────────────
         float dH_next[GRU_H];
         for (int i = 0; i < GRU_H; i++) dH_next[i] = dH[i];
 
         for (int t = GRU_T - 1; t >= 0; t--) {
-            const float* xt    = x_seq[t];
-            const float* hp    = h_prev[t];    // h_{t-1}
-            const float* zt    = z_t[t];
-            const float* rt    = r_t[t];
-            const float* hct   = hc_t[t];
-            const float* rht   = r_h[t];       // r_t ⊙ h_{t-1}
-            float* dH_curr     = dH_next;      // recebe gradiente de cima
+            const float* xt  = x_seq[t];
+            const float* hp  = h_prev[t];
+            const float* zt  = z_t[t];
+            const float* rt  = r_t[t];
+            const float* hct = hc_t[t];
+            const float* rht = r_h[t];
+            float* dH_curr   = dH_next;
 
-            // dh_t/dz_t, dh_t/dhc_t
             float dZ[GRU_H], dHc[GRU_H];
             for (int i = 0; i < GRU_H; i++) {
                 dZ[i]  = dH_curr[i] * (hp[i] - hct[i]) * sigmoid_d(zt[i]);
                 dHc[i] = dH_curr[i] * (1.f - zt[i]) * tanh_d(hct[i]);
             }
 
-            // dL/dbz, dL/dbh
             for (int i = 0; i < GRU_H; i++) {
                 bz[i] -= lr_b * dZ[i];
                 bh[i] -= lr_b * dHc[i];
             }
 
-            // dL/dWz, dL/dUz, dL/dWh, dL/dUh
-            // dUh está na camada candidata: Uh opara em rh = r_t ⊙ h_{t-1}
-            float dRH[GRU_H] = {};  // grad em r_t ⊙ h_{t-1}
+            float dRH[GRU_H] = {};
             for (int i = 0; i < GRU_H; i++) {
                 for (int j = 0; j < GRU_IN; j++) {
                     Wz[i][j] -= lr_w * dZ[i]  * xt[j];
@@ -218,7 +201,6 @@ public:
                 }
             }
 
-            // grad passa por r_t ⊙ h_{t-1}: dR = dRH ⊙ h_{t-1}
             float dR[GRU_H];
             for (int i = 0; i < GRU_H; i++)
                 dR[i] = dRH[i] * hp[i] * sigmoid_d(rt[i]);
@@ -231,16 +213,11 @@ public:
                     Ur[i][j] -= lr_w * dR[i] * hp[j];
             }
 
-            // Gradiente para h_{t-1}: contribuições de z_t, r_t e h_t
             float dH_prev[GRU_H] = {};
             for (int i = 0; i < GRU_H; i++) {
-                // via h_t = z ⊙ h_old + ...
                 dH_prev[i] += dH_curr[i] * zt[i];
-                // via Uz em z gate
                 for (int j = 0; j < GRU_H; j++) dH_prev[i] += dZ[j]  * Uz[j][i];
-                // via Ur em r gate
                 for (int j = 0; j < GRU_H; j++) dH_prev[i] += dR[j]  * Ur[j][i];
-                // via rh = r ⊙ h_old → Uh em candidate
                 dH_prev[i] += dRH[i] * rt[i];
             }
 
@@ -275,6 +252,49 @@ public:
 
 #undef CLAMP_MAT
 #undef CLAMP_VEC
+    }
+
+    // ── Serialização de pesos ────────────────────────────────────────────────
+
+    bool saveWeights(File& f) override {
+        uint32_t magic = GRU_WEIGHT_MAGIC;
+        if (f.write((uint8_t*)&magic, 4) != 4) return false;
+        // Matrizes de entrada
+        if (write_floats(f, &Wz[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        if (write_floats(f, &Wr[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        if (write_floats(f, &Wh[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        // Matrizes recorrentes
+        if (write_floats(f, &Uz[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        if (write_floats(f, &Ur[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        if (write_floats(f, &Uh[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        // Biases GRU
+        if (write_floats(f, bz, GRU_H) != GRU_H * 4u) return false;
+        if (write_floats(f, br, GRU_H) != GRU_H * 4u) return false;
+        if (write_floats(f, bh, GRU_H) != GRU_H * 4u) return false;
+        // Dense
+        if (write_floats(f, &Wd[0][0], GRU_CLS * GRU_H) != (size_t)GRU_CLS * GRU_H * 4u) return false;
+        if (write_floats(f, bd,         GRU_CLS)          != (size_t)GRU_CLS          * 4u) return false;
+        return true;
+    }
+
+    bool loadWeights(File& f) override {
+        uint32_t magic = 0;
+        if (f.read((uint8_t*)&magic, 4) != 4 || magic != GRU_WEIGHT_MAGIC) {
+            Serial.printf("[GRUModel] loadWeights: magic inválido (0x%08X)\n", magic);
+            return false;
+        }
+        if (read_floats(f, &Wz[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        if (read_floats(f, &Wr[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        if (read_floats(f, &Wh[0][0], GRU_H * GRU_IN) != GRU_H * GRU_IN * 4u) return false;
+        if (read_floats(f, &Uz[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        if (read_floats(f, &Ur[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        if (read_floats(f, &Uh[0][0], GRU_H * GRU_H)  != GRU_H * GRU_H  * 4u) return false;
+        if (read_floats(f, bz, GRU_H) != GRU_H * 4u) return false;
+        if (read_floats(f, br, GRU_H) != GRU_H * 4u) return false;
+        if (read_floats(f, bh, GRU_H) != GRU_H * 4u) return false;
+        if (read_floats(f, &Wd[0][0], GRU_CLS * GRU_H) != (size_t)GRU_CLS * GRU_H * 4u) return false;
+        if (read_floats(f, bd,         GRU_CLS)          != (size_t)GRU_CLS          * 4u) return false;
+        return true;
     }
 
 private:

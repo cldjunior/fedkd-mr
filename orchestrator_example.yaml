@@ -11,15 +11,15 @@
 clients:
   - client_id: 1
     client_name: "esp32_c1"      # deve bater com CLIENT_NAME em Config.h
-    port: "/dev/ttyUSB1"         # Linux: /dev/ttyUSBx  |  Mac: /dev/cu.usbserial-x
+    port: "/dev/ttyUSB0"         # Linux: /dev/ttyUSBx  |  Mac: /dev/cu.usbserial-x
     env: "mlp"                   # PlatformIO env: mlp, cnn1d, ou gru
   - client_id: 2
     client_name: "esp32_c2"
-    port: "/dev/ttyUSB2"
+    port: "/dev/ttyUSB1"
     env: "cnn1d"
   - client_id: 3
     client_name: "esp32_c3"
-    port: "/dev/ttyUSB3"
+    port: "/dev/ttyUSB2"
     env: "gru"
   # Adicione até 8 clientes conforme necessário:
   # - client_id: 4
@@ -29,12 +29,16 @@ clients:
 
 # ── Broker MQTT ───────────────────────────────────────────────────────────────
 broker:
-  host: "192.168.0.12"
+  host: "192.168.0.14"
   port: 1883
 
 # ── Caminhos ──────────────────────────────────────────────────────────────────
-project_dir: "/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/"                 # raiz do projeto PlatformIO (onde está platformio.ini)
-server_script: "fedkd_server.py" # NÃO modificar este script
+#project_dir: "/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/"                 # raiz do projeto PlatformIO (onde está platformio.ini)
+#server_script: "fedkd_server.py" # NÃO modificar este script
+
+project_dir: "/home/claudio/fedkd-mr-repositorio/fedkd-mr/server"
+pio_project_dir: "/home/claudio/fedkd-mr-repositorio/fedkd-mr"
+server_script: "fedkd_server.py"
 
 # Diretório onde o orquestrador salva os arquivos compartilhados gerados.
 # Será criado automaticamente se não existir.

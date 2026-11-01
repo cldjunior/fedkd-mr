@@ -89,6 +89,9 @@ struct PipelineResult {
     float         f1_local   = 0.f;
     float         f1_kd      = 0.f;
     float         f1_ft      = 0.f;
+    float         loss_local = 0.f;   // MSE último epoch treino local
+    float         loss_kd    = 0.f;   // MSE último epoch KD  (0 se pulado)
+    float         loss_ft    = 0.f;   // MSE último epoch FT  (0 se pulado)
     unsigned long t_local_ms = 0;     // duração treino local
     unsigned long t_kd_ms    = 0;     // duração KD  (0 se pulado)
     unsigned long t_ft_ms    = 0;     // duração FT  (0 se pulado)
@@ -133,7 +136,7 @@ static bool load_schema(const char* meta_path, DatasetSchema& s) {
     }
     f.close();
     s.bytes_per_row  = doc["bytes_per_row"] | 0;
-    s.encoded_labels = doc.containsKey("label_map");
+    s.encoded_labels = doc["label_map"].is<JsonObject>();
     const char* label_col = doc["label_column"] | "label";
     JsonArray schema = doc["schema"];
     int feat_idx = 0;
@@ -586,6 +589,7 @@ static PipelineResult run_pipeline() {
                                    "Avaliação pré-KD (D_priv)");
     pr.acc_local  = eval_pre.accuracy();
     pr.f1_local   = eval_pre.macro_f1();
+    pr.loss_local = m_local.mse_last;
     pr.t_local_ms = m_local.ms;
 
     // ── Etapa 2: Knowledge Distillation ──────────────────────────
@@ -615,8 +619,9 @@ static PipelineResult run_pipeline() {
 
         RunMetrics eval_kd = evaluate(*model, XY_TRAIN_PATH, METADATA_JSON_PATH,
                                       "Avaliação pós-KD (D_priv)");
-        pr.acc_kd = eval_kd.accuracy();
-        pr.f1_kd  = eval_kd.macro_f1();
+        pr.acc_kd  = eval_kd.accuracy();
+        pr.f1_kd   = eval_kd.macro_f1();
+        pr.loss_kd = m_kd.mse_last;
 
         // ── Etapa 3: Fine-tuning ──────────────────────────────────
         print_sep();
@@ -627,6 +632,7 @@ static PipelineResult run_pipeline() {
         );
         Serial.printf("  Fine-tuning concluído em %lums\n", m_ft.ms);
         print_mem();
+        pr.loss_ft = m_ft.mse_last;
     }
     pr.t_kd_ms = m_kd.ms;
     pr.t_ft_ms = m_ft.ms;
@@ -712,16 +718,18 @@ void loop() {
         int round = g_current_round;
         Serial.printf("\n[MQTT] === Round %d iniciado ===\n", round);
         PipelineResult pr = run_pipeline();
-        char done_msg[256];
+        char done_msg[384];
         snprintf(done_msg, sizeof(done_msg),
             "{\"status\":\"done\",\"round\":%d,"
             "\"acc_local\":%.4f,\"acc_kd\":%.4f,\"acc_ft\":%.4f,"
             "\"f1_local\":%.4f,\"f1_kd\":%.4f,\"f1_ft\":%.4f,"
+            "\"loss_local\":%.5f,\"loss_kd\":%.5f,\"loss_ft\":%.5f,"
             "\"heap_free\":%u,"
             "\"t_local_ms\":%lu,\"t_kd_ms\":%lu,\"t_ft_ms\":%lu}",
             round,
             pr.acc_local, pr.acc_kd, pr.acc_ft,
             pr.f1_local,  pr.f1_kd,  pr.f1_ft,
+            pr.loss_local, pr.loss_kd, pr.loss_ft,
             (unsigned)esp_get_free_heap_size(),
             pr.t_local_ms, pr.t_kd_ms, pr.t_ft_ms);
         g_mqtt_client.publish(TOPIC_CMD_PUSH,

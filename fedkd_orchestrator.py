@@ -26,6 +26,7 @@ Requisitos:
 """
 
 import argparse
+import csv
 import json
 import os
 import struct
@@ -105,7 +106,8 @@ class OrchestratorConfig:
     clients:         List[ClientConfig]
     broker_host:     str
     broker_port:     int
-    project_dir:     Path
+    project_dir:     Path          # diretório do fedkd_server.py
+    pio_project_dir: Path          # diretório com platformio.ini (para Fase 4)
     server_script:   str
     output_dir:      Path
     serial_baud:     int   = 115200
@@ -124,6 +126,7 @@ class OrchestratorConfig:
     # transfer params
     export_timeout:  int   = 60
     upload_timeout:  int   = 120
+    ack_timeout_s:   int   = 60    # timeout por linha aguardando ACK do ESP32
     inter_line_ms:   int   = 10
     hex_line_bytes:  int   = 32
     open_retries:    int   = 3
@@ -150,11 +153,13 @@ def load_config(path: str) -> OrchestratorConfig:
     fed_cfg = raw.get("federation", {})
     xfr_cfg = raw.get("transfer", {})
 
+    project_dir = Path(raw.get("project_dir", "."))
     return OrchestratorConfig(
         clients=clients,
         broker_host=raw["broker"]["host"],
         broker_port=raw["broker"].get("port", 1883),
-        project_dir=Path(raw.get("project_dir", ".")),
+        project_dir=project_dir,
+        pio_project_dir=Path(raw.get("pio_project_dir", str(project_dir))),
         server_script=raw.get("server_script", "fedkd_server.py"),
         output_dir=Path(raw.get("output_dir", "orchestrator_output")),
         serial_baud=raw.get("serial_baud", 115200),
@@ -170,6 +175,7 @@ def load_config(path: str) -> OrchestratorConfig:
         fed_interval=fed_cfg.get("inter_round_s", 5.0),
         export_timeout=xfr_cfg.get("export_timeout_s", 60),
         upload_timeout=xfr_cfg.get("upload_timeout_s", 120),
+        ack_timeout_s=xfr_cfg.get("ack_timeout_s", 60),
         inter_line_ms=xfr_cfg.get("inter_line_ms", 10),
         hex_line_bytes=xfr_cfg.get("hex_line_bytes", 32),
         open_retries=xfr_cfg.get("open_retry_count", 3),
@@ -590,6 +596,7 @@ def _send_file_to_esp32(
     inter_line_ms: int,
     hex_line_bytes: int,
     upload_timeout_s: float,
+    ack_timeout_s: float = 60.0,
 ) -> bool:
     """
     Envia um arquivo para o ESP32 via protocolo UPLOAD serial.
@@ -663,7 +670,7 @@ def _send_file_to_esp32(
         # O firmware envia '+\n' após gravar cada linha com sucesso.
         # Isso garante que nunca enviamos dados mais rápido do que o ESP32 processa,
         # eliminando overflow do buffer UART independente do tempo de flash.
-        ack_deadline = min(deadline, time.monotonic() + 10.0)
+        ack_deadline = min(deadline, time.monotonic() + ack_timeout_s)
         ack = None
         while time.monotonic() < ack_deadline:
             remaining_ack = ack_deadline - time.monotonic()
@@ -714,6 +721,29 @@ def _send_file_to_esp32(
         return False
 
 
+_TRANSFER_LOG_HEADER = ["ts", "client", "file", "remote_path", "bytes", "duration_ms", "status"]
+
+
+def _append_transfer_log(
+    output_dir: Path,
+    ts: str,
+    client: str,
+    file_name: str,
+    remote_path: str,
+    n_bytes: int,
+    duration_ms: int,
+    status: str,
+) -> None:
+    """Appends one row to transfer_log.csv (creates with header if needed)."""
+    log_path = output_dir / "transfer_log.csv"
+    write_header = not log_path.exists()
+    with log_path.open("a", newline="") as fh:
+        w = csv.writer(fh)
+        if write_header:
+            w.writerow(_TRANSFER_LOG_HEADER)
+        w.writerow([ts, client, file_name, remote_path, n_bytes, duration_ms, status])
+
+
 def upload_shared_files(
     port: str,
     client_name: str,
@@ -724,6 +754,7 @@ def upload_shared_files(
     """
     Faz upload dos 4 arquivos compartilhados para um ESP32.
     Não apaga dataset_priv.bin.
+    Registra tempo, tamanho e status de cada arquivo em transfer_log.csv.
     """
     files_to_upload = [
         ("dataset_pub",       shared_dir / "dataset_pub.bin"),
@@ -751,14 +782,32 @@ def upload_shared_files(
                 _err(f"  Arquivo local não encontrado: {local_path}")
                 return False
             data = local_path.read_bytes()
+            n_bytes = len(data)
+            remote = FS_PATHS[key]
+            ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            t0 = time.monotonic()
             ok = _send_file_to_esp32(
                 ser,
-                remote_path=FS_PATHS[key],
+                remote_path=remote,
                 data=data,
                 inter_line_ms=cfg.inter_line_ms,
                 hex_line_bytes=cfg.hex_line_bytes,
                 upload_timeout_s=cfg.upload_timeout,
+                ack_timeout_s=cfg.ack_timeout_s,
             )
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            status = "ok" if ok else "error"
+            _append_transfer_log(
+                cfg.output_dir,
+                ts=ts,
+                client=client_name,
+                file_name=local_path.name,
+                remote_path=remote,
+                n_bytes=n_bytes,
+                duration_ms=duration_ms,
+                status=status,
+            )
+            _info(f"    → transfer_log: {local_path.name} {n_bytes}B {duration_ms}ms [{status}]")
             if not ok:
                 _err(f"  Falha ao enviar {local_path.name} para {client_name}")
                 return False
@@ -943,7 +992,7 @@ class FedKDOrchestrator:
                 ok = flash_firmware(
                     port=client.port,
                     env=client.env,
-                    project_dir=self.cfg.project_dir,
+                    project_dir=self.cfg.pio_project_dir,
                     dry_run=self.dry_run,
                 )
                 if not ok:

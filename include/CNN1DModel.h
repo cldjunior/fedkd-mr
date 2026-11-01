@@ -22,11 +22,24 @@
  *   Conv2 W: 32×64×3 = 6144 f + 64 bias
  *   Dense W: 64×4    =  256 f +  4 bias
  *   Total:   ~29 KB  — ok para ESP32 (~320 KB heap)
+ *
+ * Formato de serialização (saveWeights / loadWeights):
+ *   [4 bytes] magic = 0x434E4E31  ('CNN1')
+ *   w1[32][12][3]  → 4608 bytes
+ *   b1[32]         →  128 bytes
+ *   w2[64][32][3]  → 24576 bytes
+ *   b2[64]         →  256 bytes
+ *   wd[4][64]      → 1024 bytes
+ *   bd[4]          →   16 bytes
+ *   Total dados:   ~30 KB
  */
 
 #include "Model.h"
 #include <stdlib.h>
 #include <string.h>
+
+// Magic para validação do arquivo de pesos CNN1D
+static constexpr uint32_t CNN1D_WEIGHT_MAGIC = 0x434E4E31u;  // 'CNN1'
 
 // ── Hiperparâmetros fixos ─────────────────────────────────────────────────────
 static const int CNN_T  = 8;         // T_WINDOW
@@ -65,7 +78,6 @@ public:
     float inp[CNN_C][CNN_T];     // reshape de x[96]
 
     // ── Gradientes (membros heap para não estourar pilha loopTask de 8 KB) ───
-    // dA2+dZ2 = 2×(64×8×4) = 4 KB; dA1+dZ1 = 2×(32×8×4) = 2 KB
     float dA2_m[CNN_CH2][CNN_T];
     float dZ2_m[CNN_CH2][CNN_T];
     float dA1_m[CNN_CH1][CNN_T];
@@ -80,7 +92,6 @@ public:
 
     // ── Construtor: inicialização He/Xavier ──────────────────────────────────
     CNN1DModel() {
-        // He init para ReLU: std = sqrt(2 / fan_in)
         float std1 = sqrtf(2.f / (CNN_C  * CNN_K));
         float std2 = sqrtf(2.f / (CNN_CH1 * CNN_K));
         float stdD = sqrtf(2.f / CNN_CH2);
@@ -108,45 +119,38 @@ public:
     // ── Interface Model ──────────────────────────────────────────────────────
 
     float* feedForward(const float* x) override {
-        // Reshape x[96] → inp[12][8]  (inp[feature][timestep])
         for (int c = 0; c < CNN_C; c++)
             for (int t = 0; t < CNN_T; t++)
                 inp[c][t] = x[t * CNN_C + c];
 
-        // ── Conv1 + ReLU ──────────────────────────────────────────────────────
-        // pad=1 (zero-padding) → saída mesmo tamanho T=8
         for (int o = 0; o < CNN_CH1; o++) {
             for (int t = 0; t < CNN_T; t++) {
                 float sum = b1[o];
-                for (int i = 0; i < CNN_C; i++) {
+                for (int i = 0; i < CNN_C; i++)
                     for (int k = 0; k < CNN_K; k++) {
-                        int ts = t + k - 1;         // -1 = padding left
+                        int ts = t + k - 1;
                         if (ts >= 0 && ts < CNN_T)
                             sum += w1[o][i][k] * inp[i][ts];
                     }
-                }
                 z1[o][t] = sum;
                 a1[o][t] = relu(sum);
             }
         }
 
-        // ── Conv2 + ReLU ──────────────────────────────────────────────────────
         for (int o = 0; o < CNN_CH2; o++) {
             for (int t = 0; t < CNN_T; t++) {
                 float sum = b2[o];
-                for (int i = 0; i < CNN_CH1; i++) {
+                for (int i = 0; i < CNN_CH1; i++)
                     for (int k = 0; k < CNN_K; k++) {
                         int ts = t + k - 1;
                         if (ts >= 0 && ts < CNN_T)
                             sum += w2[o][i][k] * a1[i][ts];
                     }
-                }
                 z2[o][t] = sum;
                 a2[o][t] = relu(sum);
             }
         }
 
-        // ── GlobalMaxPool ─────────────────────────────────────────────────────
         for (int o = 0; o < CNN_CH2; o++) {
             float mx = a2[o][0]; int pos = 0;
             for (int t = 1; t < CNN_T; t++)
@@ -155,20 +159,17 @@ public:
             pool_pos[o] = pos;
         }
 
-        // ── Dense → Softmax ───────────────────────────────────────────────────
         for (int o = 0; o < CNN_CLS; o++) {
             float sum = bd[o];
             for (int i = 0; i < CNN_CH2; i++) sum += wd[o][i] * pool[i];
             logits[o] = sum;
-            probs[o]  = sum;  // copiado antes do softmax
+            probs[o]  = sum;
         }
         softmax(probs, CNN_CLS);
-
         return probs;
     }
 
     void backProp(const float* y_target) override {
-        // ── Gradiente Softmax+CE: dL/dlogits = probs - y_target ──────────────
         float dLogits[CNN_CLS];
         float sq_err = 0.f;
         for (int k = 0; k < CNN_CLS; k++) {
@@ -178,7 +179,6 @@ public:
         }
         sum_sq_err += sq_err;
 
-        // ── Dense backward ────────────────────────────────────────────────────
         float dPool[CNN_CH2] = {};
         for (int o = 0; o < CNN_CLS; o++) {
             bd[o] -= lr_b * dLogits[o];
@@ -188,18 +188,14 @@ public:
             }
         }
 
-        // ── GlobalMaxPool backward (grad só passa pela posição do max) ────────
         memset(dA2_m, 0, sizeof(dA2_m));
         for (int o = 0; o < CNN_CH2; o++)
             dA2_m[o][pool_pos[o]] = dPool[o];
 
-        // ── Conv2 backward ────────────────────────────────────────────────────
-        // dZ2 = dA2 * relu'(z2)
         for (int o = 0; o < CNN_CH2; o++)
             for (int t = 0; t < CNN_T; t++)
                 dZ2_m[o][t] = dA2_m[o][t] * relu_d(z2[o][t]);
 
-        // dA1[i][ts] += sum_o sum_k w2[o][i][k] * dZ2[o][t]  (t = ts - k + 1)
         memset(dA1_m, 0, sizeof(dA1_m));
         for (int o = 0; o < CNN_CH2; o++) {
             b2[o] -= lr_b * _sum(dZ2_m[o], CNN_T);
@@ -218,7 +214,6 @@ public:
             }
         }
 
-        // ── Conv1 backward ────────────────────────────────────────────────────
         for (int o = 0; o < CNN_CH1; o++)
             for (int t = 0; t < CNN_T; t++)
                 dZ1_m[o][t] = dA1_m[o][t] * relu_d(z1[o][t]);
@@ -251,21 +246,18 @@ public:
     }
 
     void clampParams(float max_val) override {
-        // Conv1
         for (int o = 0; o < CNN_CH1; o++) {
             b1[o] = clamp(b1[o], -max_val, max_val);
             for (int i = 0; i < CNN_C;  i++)
                 for (int k = 0; k < CNN_K; k++)
                     w1[o][i][k] = clamp(w1[o][i][k], -max_val, max_val);
         }
-        // Conv2
         for (int o = 0; o < CNN_CH2; o++) {
             b2[o] = clamp(b2[o], -max_val, max_val);
             for (int i = 0; i < CNN_CH1; i++)
                 for (int k = 0; k < CNN_K; k++)
                     w2[o][i][k] = clamp(w2[o][i][k], -max_val, max_val);
         }
-        // Dense
         for (int o = 0; o < CNN_CLS; o++) {
             bd[o] = clamp(bd[o], -max_val, max_val);
             for (int i = 0; i < CNN_CH2; i++)
@@ -273,13 +265,40 @@ public:
         }
     }
 
+    // ── Serialização de pesos ────────────────────────────────────────────────
+
+    bool saveWeights(File& f) override {
+        uint32_t magic = CNN1D_WEIGHT_MAGIC;
+        if (f.write((uint8_t*)&magic, 4) != 4) return false;
+        if (write_floats(f, &w1[0][0][0], CNN_CH1 * CNN_C  * CNN_K) != CNN_CH1 * CNN_C  * CNN_K * 4u) return false;
+        if (write_floats(f, b1,           CNN_CH1)                  != CNN_CH1                   * 4u) return false;
+        if (write_floats(f, &w2[0][0][0], CNN_CH2 * CNN_CH1 * CNN_K) != CNN_CH2 * CNN_CH1 * CNN_K * 4u) return false;
+        if (write_floats(f, b2,           CNN_CH2)                  != CNN_CH2                   * 4u) return false;
+        if (write_floats(f, &wd[0][0],    CNN_CLS * CNN_CH2)        != CNN_CLS * CNN_CH2         * 4u) return false;
+        if (write_floats(f, bd,           CNN_CLS)                  != (size_t)CNN_CLS            * 4u) return false;
+        return true;
+    }
+
+    bool loadWeights(File& f) override {
+        uint32_t magic = 0;
+        if (f.read((uint8_t*)&magic, 4) != 4 || magic != CNN1D_WEIGHT_MAGIC) {
+            Serial.printf("[CNN1DModel] loadWeights: magic inválido (0x%08X)\n", magic);
+            return false;
+        }
+        if (read_floats(f, &w1[0][0][0], CNN_CH1 * CNN_C  * CNN_K) != CNN_CH1 * CNN_C  * CNN_K * 4u) return false;
+        if (read_floats(f, b1,           CNN_CH1)                  != CNN_CH1                   * 4u) return false;
+        if (read_floats(f, &w2[0][0][0], CNN_CH2 * CNN_CH1 * CNN_K) != CNN_CH2 * CNN_CH1 * CNN_K * 4u) return false;
+        if (read_floats(f, b2,           CNN_CH2)                  != CNN_CH2                   * 4u) return false;
+        if (read_floats(f, &wd[0][0],    CNN_CLS * CNN_CH2)        != CNN_CLS * CNN_CH2         * 4u) return false;
+        if (read_floats(f, bd,           CNN_CLS)                  != (size_t)CNN_CLS            * 4u) return false;
+        return true;
+    }
+
 private:
-    // Número aleatório em [-1, 1]
     static float randf() {
         return ((float)random(-1000, 1001)) / 1000.f;
     }
 
-    // Soma de um vetor de tamanho n
     static float _sum(const float* v, int n) {
         float s = 0.f;
         for (int i = 0; i < n; i++) s += v[i];

@@ -272,6 +272,7 @@ static void handle_upload(const char* cmd) {
                     // O host NÃO envia a próxima linha até receber este ACK.
                     Serial.write('+');
                     Serial.write('\n');
+                    Serial.flush();  // garante transmissão imediata antes de aguardar próxima linha
                 }
             }
 
