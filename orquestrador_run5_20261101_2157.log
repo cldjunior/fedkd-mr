@@ -1,0 +1,1164 @@
+============================================================
+  FedKD-MR Orchestrator
+  Config: orchestrator_example.yaml
+============================================================
+
+============================================================
+  FedKD-MR Orchestrator
+============================================================
+  Clientes  : 3
+  Broker    : 192.168.0.14:1883
+  ProjDir   : /home/claudio/fedkd-mr-repositorio/fedkd-mr/server
+  OutDir    : orchestrator_output
+  Fases     : [1, 2, 3, 4, 5]
+  Dry-run   : False
+
+============================================================
+  Fase 1 — Exportar dataset_priv.bin
+============================================================
+
+  Pressione ENTER quando a coleta de dados estiver concluída em TODOS os ESP32...
+  [+00:02] ✓ Exportando de esp32_c1 (/dev/ttyUSB0)...
+  [+00:02] ✓ Porta /dev/ttyUSB0 aberta (tentativa 1/3)
+  [+00:02] ✓   Enviando 'x' para dump de /dev/ttyUSB0...
+  [+00:04] ✓   DUMP_START: 153615 bytes esperados
+  [+00:32] ✓   Exportado: 153615 bytes = 399 amostras
+  [+00:32] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c1.bin
+  [+00:32] ✓ Exportando de esp32_c2 (/dev/ttyUSB1)...
+  [+00:32] ✓ Porta /dev/ttyUSB1 aberta (tentativa 1/3)
+  [+00:32] ✓   Enviando 'x' para dump de /dev/ttyUSB1...
+  [+00:33] ✓   DUMP_START: 150150 bytes esperados
+  [+01:01] ✓   Exportado: 150150 bytes = 390 amostras
+  [+01:01] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c2.bin
+  [+01:01] ✓ Exportando de esp32_c3 (/dev/ttyUSB2)...
+  [+01:01] ✓ Porta /dev/ttyUSB2 aberta (tentativa 1/3)
+  [+01:01] ✓   Enviando 'x' para dump de /dev/ttyUSB2...
+  [+01:03] ✓   DUMP_START: 108570 bytes esperados
+  [+01:23] ✓   Exportado: 108570 bytes = 282 amostras
+  [+01:23] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c3.bin
+  [+01:23] ✓ Fase 1 concluída.
+
+============================================================
+  Fase 2 — Gerar arquivos compartilhados
+============================================================
+  [+01:23] ✓   esp32_c1: 399 amostras — {'EMPTY': 107, 'STATIONARY': 91, 'APPROACHING': 105, 'LEAVING': 96}
+  [+01:23] ✓   esp32_c2: 390 amostras — {'EMPTY': 100, 'STATIONARY': 80, 'APPROACHING': 95, 'LEAVING': 115}
+  [+01:23] ✓   esp32_c3: 282 amostras — {'EMPTY': 69, 'STATIONARY': 65, 'APPROACHING': 78, 'LEAVING': 70}
+  [+01:23] ✓   D_pub: 20 amostras (5 × 4 classes)
+  [+01:23] ✓   Gerando teacher_probs (MLP ensemble)...
+  [+01:23] ✓   Treinando MLP para esp32_c1 (399 amostras)...
+  [+01:23] ✓     Pronto. Score treino: 0.742
+  [+01:23] ✓   Treinando MLP para esp32_c2 (390 amostras)...
+  [+01:23] ✓     Pronto. Score treino: 0.728
+  [+01:23] ✓   Treinando MLP para esp32_c3 (282 amostras)...
+  [+01:23] ✓     Pronto. Score treino: 0.606
+  [+01:23] ✓   Teacher probs: H_médio=1.353  prob_range=[0.127, 0.377]
+  [+01:23] ✓   dataset_pub.bin: 7700 bytes
+  [+01:23] ✓   teacher_probs.bin: 320 bytes (20 × 4 × 4)
+  [+01:23] ✓   teacher_probs_meta.json: {'n_pub': 20, 'n_classes': 4, 'temperature': 2.0, 'bytes_per_row': 16, 'total_bytes': 320}
+  [+01:23] ✓   metadata.json: 97 colunas, bytes_per_row=385
+  [+01:23] ✓ Fase 2 concluída → orchestrator_output
+
+============================================================
+  Fase 3 — Upload de arquivos compartilhados
+============================================================
+  [+01:23] ✓ Enviando para esp32_c1 (/dev/ttyUSB0)...
+  [+01:23] ✓ Porta /dev/ttyUSB0 aberta (tentativa 1/3)
+  [+01:23] ✓   Aguardando ESP32 inicializar (4s)...
+  [+01:28] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+        0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+  [+01:31] ✓     UPLOAD_OK 7700 bytes ✓
+  [+01:31] ✓     → transfer_log: dataset_pub.bin 7700B 3084ms [ok]
+  [+01:31] ✓     → UPLOAD /metadata.json (12284 bytes)
+        0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   
+  [+01:36] ✓     UPLOAD_OK 12284 bytes ✓
+  [+01:36] ✓     → transfer_log: metadata.json 12284B 4827ms [ok]
+  [+01:36] ✓     → UPLOAD /teacher_probs.bin (320 bytes)
+
+  [+01:37] ✓     UPLOAD_OK 320 bytes ✓
+  [+01:37] ✓     → transfer_log: teacher_probs.bin 320B 267ms [ok]
+  [+01:37] ✓     → UPLOAD /teacher_probs_meta.json (102 bytes)
+
+  [+01:37] ✓     UPLOAD_OK 102 bytes ✓
+  [+01:37] ✓     → transfer_log: teacher_probs_meta.json 102B 201ms [ok]
+  [+01:38] ✓ Enviando para esp32_c2 (/dev/ttyUSB1)...
+  [+01:38] ✓ Porta /dev/ttyUSB1 aberta (tentativa 1/3)
+  [+01:38] ✓   Aguardando ESP32 inicializar (4s)...
+  [+01:42] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+        0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+  [+01:45] ✓     UPLOAD_OK 7700 bytes ✓
+  [+01:45] ✓     → transfer_log: dataset_pub.bin 7700B 2985ms [ok]
+  [+01:46] ✓     → UPLOAD /metadata.json (12284 bytes)
+        0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   
+  [+01:50] ✓     UPLOAD_OK 12284 bytes ✓
+  [+01:50] ✓     → transfer_log: metadata.json 12284B 4675ms [ok]
+  [+01:51] ✓     → UPLOAD /teacher_probs.bin (320 bytes)
+
+  [+01:51] ✓     UPLOAD_OK 320 bytes ✓
+  [+01:51] ✓     → transfer_log: teacher_probs.bin 320B 252ms [ok]
+  [+01:51] ✓     → UPLOAD /teacher_probs_meta.json (102 bytes)
+
+  [+01:52] ✓     UPLOAD_OK 102 bytes ✓
+  [+01:52] ✓     → transfer_log: teacher_probs_meta.json 102B 186ms [ok]
+  [+01:52] ✓ Enviando para esp32_c3 (/dev/ttyUSB2)...
+  [+01:52] ✓ Porta /dev/ttyUSB2 aberta (tentativa 1/3)
+  [+01:52] ✓   Aguardando ESP32 inicializar (4s)...
+  [+01:56] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+  [+01:56] ✓     ESP32 (descartado antes de UPLOAD_READY): '[GRAVANDO] Label: (nenhum)      E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+        0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+  [+01:59] ✓     UPLOAD_OK 7700 bytes ✓
+  [+01:59] ✓     → transfer_log: dataset_pub.bin 7700B 2950ms [ok]
+  [+02:00] ✓     → UPLOAD /metadata.json (12284 bytes)
+        0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   ********************************************************************************
+Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+Please remove multiple PIO Cores from a system:
+https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+********************************************************************************
+Processing mlp (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 36 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+|-- ArduinoJson @ 7.4.3
+|-- PubSubClient @ 2.8.0
+|-- LittleFS @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- FS @ 2.0.0
+Building in release mode
+Compiling .pio/build/mlp/src/LD2410C.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/src/main.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Building .pio/build/mlp/bootloader.bin
+Generating partitions .pio/build/mlp/partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+In file included from include/MLPModel.h:22,
+                 from src/main.cpp:42:
+.pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:31: warning: "SD_NN_WRITE_MODE" redefined
+ #define SD_NN_WRITE_MODE O_WRITE | O_CREAT
+ 
+In file included from src/main.cpp:38:
+.pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:38: note: this is the location of the previous definition
+     #define SD_NN_WRITE_MODE "w"
+ 
+Compiling .pio/build/mlp/libe7c/EEPROM/EEPROM.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/lib40e/PubSubClient/PubSubClient.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+In file included from src/main.cpp:38:
+.pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+ 
+- " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+
+ 𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+
+
+ #pragma message( STR(INFORMATION) )
+                                   ^
+Compiling .pio/build/mlp/libf2e/FS/FS.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/libf2e/FS/vfs_api.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/lib5b3/LittleFS/LittleFS.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFi.cpp.o
+Archiving .pio/build/mlp/libe7c/libEEPROM.a
+Indexing .pio/build/mlp/libe7c/libEEPROM.a
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiAP.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiClient.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiGeneric.cpp.o
+Archiving .pio/build/mlp/lib40e/libPubSubClient.a
+Indexing .pio/build/mlp/lib40e/libPubSubClient.a
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiMulti.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/mlp/libf2e/libFS.a
+Indexing .pio/build/mlp/libf2e/libFS.a
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiSTA.cpp.o
+Archiving .pio/build/mlp/lib5b3/libLittleFS.a
+Indexing .pio/build/mlp/lib5b3/libLittleFS.a
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiScan.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiServer.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/liba4e/WiFi/WiFiUdp.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/Esp.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/FirmwareMSC.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/FunctionalInterrupt.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/HWCDC.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/HardwareSerial.cpp.o
+Archiving .pio/build/mlp/liba4e/libWiFi.a
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Indexing .pio/build/mlp/liba4e/libWiFi.a
+Compiling .pio/build/mlp/FrameworkArduino/IPAddress.cpp.o
+Compiling .pio/build/mlp/FrameworkArduino/IPv6Address.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/MD5Builder.cpp.o
+Compiling .pio/build/mlp/FrameworkArduino/Print.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/Stream.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/StreamString.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/Tone.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/USB.cpp.o
+Compiling .pio/build/mlp/FrameworkArduino/USBCDC.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/USBMSC.cpp.o
+Compiling .pio/build/mlp/FrameworkArduino/WMath.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/WString.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/base64.cpp.o
+Compiling .pio/build/mlp/FrameworkArduino/cbuf.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-adc.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-bt.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-cpu.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-dac.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-gpio.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-i2c-slave.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-i2c.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-ledc.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-matrix.c.o
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-misc.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-psram.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-rgb-led.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-rmt.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-sigmadelta.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-spi.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-time.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-timer.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-tinyusb.c.o
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-touch.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/esp32-hal-uart.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/firmware_msc_fat.c.o
+Compiling .pio/build/mlp/FrameworkArduino/libb64/cdecode.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/libb64/cencode.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/main.cpp.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/stdlib_noniso.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/wiring_pulse.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/mlp/FrameworkArduino/wiring_shift.c.o
+<command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "LOCAL_LR_BIASES" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/mlp/libFrameworkArduino.a
+Indexing .pio/build/mlp/libFrameworkArduino.a
+Linking .pio/build/mlp/firmware.elf
+Retrieving maximum program size .pio/build/mlp/firmware.elf
+Checking size .pio/build/mlp/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.7% (used 44984 bytes from 327680 bytes)
+Flash: [======    ]  62.1% (used 813473 bytes from 1310720 bytes)
+Building .pio/build/mlp/firmware.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 27 ELF sections
+Successfully created esp32 image.
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyUSB0
+Uploading .pio/build/mlp/firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyUSB0
+Connecting......
+Chip is ESP32-D0WD-V3 (revision v3.1)
+Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+Crystal is 40MHz
+MAC: 8c:94:df:92:bf:88
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00001000 to 0x00005fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x000d8fff...
+Compressed 17536 bytes to 12202...
+Writing at 0x00001000... (100 %)
+Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.5 seconds (effective 265.9 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 146...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.0 seconds (effective 495.0 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 665.0 kbit/s)...
+Hash of data verified.
+Compressed 820048 bytes to 532283...
+Writing at 0x00010000... (3 %)
+Writing at 0x0001bed3... (6 %)
+Writing at 0x000264f4... (9 %)
+Writing at 0x00032769... (12 %)
+Writing at 0x00037db2... (15 %)
+Writing at 0x0003d4c8... (18 %)
+Writing at 0x00042c13... (21 %)
+Writing at 0x000482a7... (24 %)
+Writing at 0x0004d438... (27 %)
+Writing at 0x0005260b... (30 %)
+Writing at 0x00057822... (33 %)
+Writing at 0x0005cb63... (36 %)
+Writing at 0x00061eda... (39 %)
+Writing at 0x000673d0... (42 %)
+Writing at 0x0006c296... (45 %)
+Writing at 0x000715da... (48 %)
+Writing at 0x000769f7... (51 %)
+Writing at 0x0007c6a5... (54 %)
+Writing at 0x00081c13... (57 %)
+Writing at 0x00086efa... (60 %)
+Writing at 0x0008c313... (63 %)
+Writing at 0x0009180c... (66 %)
+Writing at 0x00096e53... (69 %)
+Writing at 0x0009c686... (72 %)
+Writing at 0x000a25e2... (75 %)
+Writing at 0x000a7df4... (78 %)
+Writing at 0x000ae388... (81 %)
+Writing at 0x000b8831... (84 %)
+Writing at 0x000bde0a... (87 %)
+Writing at 0x000c499b... (90 %)
+Writing at 0x000ca6e1... (93 %)
+Writing at 0x000cfe9e... (96 %)
+Writing at 0x000d5681... (100 %)
+Wrote 820048 bytes (532283 compressed) at 0x00010000 in 13.2 seconds (effective 497.1 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 45.15 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+mlp            SUCCESS   00:00:45.151
+========================= 1 succeeded in 00:00:45.151 =========================
+********************************************************************************
+Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+Please remove multiple PIO Cores from a system:
+https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+********************************************************************************
+Processing cnn1d (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 36 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+|-- ArduinoJson @ 7.4.3
+|-- PubSubClient @ 2.8.0
+|-- LittleFS @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- FS @ 2.0.0
+Building in release mode
+Compiling .pio/build/cnn1d/src/LD2410C.cpp.o
+Compiling .pio/build/cnn1d/src/main.cpp.o
+Building .pio/build/cnn1d/bootloader.bin
+Generating partitions .pio/build/cnn1d/partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Compiling .pio/build/cnn1d/libe7c/EEPROM/EEPROM.cpp.o
+Compiling .pio/build/cnn1d/lib68b/PubSubClient/PubSubClient.cpp.o
+In file included from include/MLPModel.h:22,
+                 from src/main.cpp:42:
+.pio/libdeps/cnn1d/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+ 
+- " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+
+ 𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+
+
+ #pragma message( STR(INFORMATION) )
+                                   ^
+Compiling .pio/build/cnn1d/libf2e/FS/FS.cpp.o
+Compiling .pio/build/cnn1d/libf2e/FS/vfs_api.cpp.o
+Compiling .pio/build/cnn1d/lib5b3/LittleFS/LittleFS.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFi.cpp.o
+Archiving .pio/build/cnn1d/libe7c/libEEPROM.a
+Indexing .pio/build/cnn1d/libe7c/libEEPROM.a
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiAP.cpp.o
+Archiving .pio/build/cnn1d/lib68b/libPubSubClient.a
+Indexing .pio/build/cnn1d/lib68b/libPubSubClient.a
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiClient.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiGeneric.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiMulti.cpp.o
+Archiving .pio/build/cnn1d/lib5b3/libLittleFS.a
+Indexing .pio/build/cnn1d/lib5b3/libLittleFS.a
+Archiving .pio/build/cnn1d/libf2e/libFS.a
+Indexing .pio/build/cnn1d/libf2e/libFS.a
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiSTA.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiScan.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiServer.cpp.o
+Compiling .pio/build/cnn1d/liba4e/WiFi/WiFiUdp.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/Esp.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/FirmwareMSC.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/FunctionalInterrupt.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/HWCDC.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/HardwareSerial.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/IPAddress.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/IPv6Address.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/MD5Builder.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/Print.cpp.o
+Archiving .pio/build/cnn1d/liba4e/libWiFi.a
+Indexing .pio/build/cnn1d/liba4e/libWiFi.a
+Compiling .pio/build/cnn1d/FrameworkArduino/Stream.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/StreamString.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/Tone.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/USB.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/USBCDC.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/USBMSC.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/WMath.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/WString.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/base64.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/cbuf.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-adc.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-bt.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-cpu.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-dac.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-gpio.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-i2c-slave.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-i2c.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-ledc.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-matrix.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-misc.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-psram.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-rgb-led.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-rmt.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-sigmadelta.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-spi.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-time.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-timer.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-tinyusb.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-touch.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/esp32-hal-uart.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/firmware_msc_fat.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/libb64/cdecode.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/libb64/cencode.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/main.cpp.o
+Compiling .pio/build/cnn1d/FrameworkArduino/stdlib_noniso.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/wiring_pulse.c.o
+Compiling .pio/build/cnn1d/FrameworkArduino/wiring_shift.c.o
+Archiving .pio/build/cnn1d/libFrameworkArduino.a
+Indexing .pio/build/cnn1d/libFrameworkArduino.a
+Linking .pio/build/cnn1d/firmware.elf
+Retrieving maximum program size .pio/build/cnn1d/firmware.elf
+Checking size .pio/build/cnn1d/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.7% (used 44968 bytes from 327680 bytes)
+Flash: [======    ]  62.0% (used 813081 bytes from 1310720 bytes)
+Building .pio/build/cnn1d/firmware.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 27 ELF sections
+Successfully created esp32 image.
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyUSB1
+Uploading .pio/build/cnn1d/firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyUSB1
+Connecting......
+Chip is ESP32-D0WD-V3 (revision v3.1)
+Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+Crystal is 40MHz
+MAC: 8c:94:df:93:a7:90
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00001000 to 0x00005fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x000d8fff...
+Compressed 17536 bytes to 12202...
+Writing at 0x00001000... (100 %)
+Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.4 seconds (effective 360.1 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 146...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.0 seconds (effective 1415.6 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.0 seconds (effective 2178.3 kbit/s)...
+Hash of data verified.
+Compressed 819664 bytes to 532178...
+Writing at 0x00010000... (3 %)
+Writing at 0x0001bee5... (6 %)
+Writing at 0x000264f3... (9 %)
+Writing at 0x00032818... (12 %)
+Writing at 0x00037cf7... (15 %)
+Writing at 0x0003d3e0... (18 %)
+Writing at 0x00042b47... (21 %)
+Writing at 0x000481d6... (24 %)
+Writing at 0x0004d36a... (27 %)
+Writing at 0x00052547... (30 %)
+Writing at 0x00057755... (33 %)
+Writing at 0x0005caa0... (36 %)
+Writing at 0x00061e0b... (39 %)
+Writing at 0x00067300... (42 %)
+Writing at 0x0006c1b7... (45 %)
+Writing at 0x000714fd... (48 %)
+Writing at 0x000768dd... (51 %)
+Writing at 0x0007c5cc... (54 %)
+Writing at 0x00081b0e... (57 %)
+Writing at 0x00086e01... (60 %)
+Writing at 0x0008c1fa... (63 %)
+Writing at 0x00091714... (66 %)
+Writing at 0x00096d78... (69 %)
+Writing at 0x0009c5b5... (72 %)
+Writing at 0x000a2510... (75 %)
+Writing at 0x000a7d01... (78 %)
+Writing at 0x000ae28c... (81 %)
+Writing at 0x000b874b... (84 %)
+Writing at 0x000bdd2a... (87 %)
+Writing at 0x000c48d2... (90 %)
+Writing at 0x000ca5d7... (93 %)
+Writing at 0x000cfdc2... (96 %)
+Writing at 0x000d5606... (100 %)
+Wrote 819664 bytes (532178 compressed) at 0x00010000 in 13.0 seconds (effective 503.1 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 42.29 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+cnn1d          SUCCESS   00:00:42.295
+========================= 1 succeeded in 00:00:42.295 =========================
+********************************************************************************
+Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+Please remove multiple PIO Cores from a system:
+https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+********************************************************************************
+Processing gru (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 36 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+|-- ArduinoJson @ 7.4.3
+|-- PubSubClient @ 2.8.0
+|-- LittleFS @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- FS @ 2.0.0
+Building in release mode
+Compiling .pio/build/gru/src/LD2410C.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/src/main.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Building .pio/build/gru/bootloader.bin
+Generating partitions .pio/build/gru/partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Compiling .pio/build/gru/libe7c/EEPROM/EEPROM.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/libb4b/PubSubClient/PubSubClient.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+In file included from include/MLPModel.h:22,
+                 from src/main.cpp:42:
+.pio/libdeps/gru/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+ 
+- " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+
+ 𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+
+
+ #pragma message( STR(INFORMATION) )
+                                   ^
+Compiling .pio/build/gru/libf2e/FS/FS.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/libf2e/FS/vfs_api.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/lib5b3/LittleFS/LittleFS.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFi.cpp.o
+Archiving .pio/build/gru/libe7c/libEEPROM.a
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Indexing .pio/build/gru/libe7c/libEEPROM.a
+Compiling .pio/build/gru/liba4e/WiFi/WiFiAP.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFiClient.cpp.o
+Archiving .pio/build/gru/libb4b/libPubSubClient.a
+Indexing .pio/build/gru/libb4b/libPubSubClient.a
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFiGeneric.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFiMulti.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/gru/libf2e/libFS.a
+Indexing .pio/build/gru/libf2e/libFS.a
+Compiling .pio/build/gru/liba4e/WiFi/WiFiSTA.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/gru/lib5b3/libLittleFS.a
+Indexing .pio/build/gru/lib5b3/libLittleFS.a
+Compiling .pio/build/gru/liba4e/WiFi/WiFiScan.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFiServer.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/liba4e/WiFi/WiFiUdp.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/Esp.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/FirmwareMSC.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/FunctionalInterrupt.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/HWCDC.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/HardwareSerial.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/IPAddress.cpp.o
+Compiling .pio/build/gru/FrameworkArduino/IPv6Address.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/MD5Builder.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/Print.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/gru/liba4e/libWiFi.a
+Indexing .pio/build/gru/liba4e/libWiFi.a
+Compiling .pio/build/gru/FrameworkArduino/Stream.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/StreamString.cpp.o
+Compiling .pio/build/gru/FrameworkArduino/Tone.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/USB.cpp.o
+Compiling .pio/build/gru/FrameworkArduino/USBCDC.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/USBMSC.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/WMath.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/WString.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/base64.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/cbuf.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-adc.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-bt.c.o
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-cpu.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-dac.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-gpio.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-i2c-slave.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-i2c.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-ledc.c.o
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-matrix.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-misc.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-psram.c.o
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-rgb-led.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-rmt.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-sigmadelta.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-spi.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-time.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-timer.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-tinyusb.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-touch.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/esp32-hal-uart.c.o
+Compiling .pio/build/gru/FrameworkArduino/firmware_msc_fat.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/libb64/cdecode.c.o
+Compiling .pio/build/gru/FrameworkArduino/libb64/cencode.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/main.cpp.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/stdlib_noniso.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/wiring_pulse.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Compiling .pio/build/gru/FrameworkArduino/wiring_shift.c.o
+<command-line>: warning: "MQTT_KEEPALIVE" redefined
+<command-line>: note: this is the location of the previous definition
+Archiving .pio/build/gru/libFrameworkArduino.a
+Indexing .pio/build/gru/libFrameworkArduino.a
+Linking .pio/build/gru/firmware.elf
+Retrieving maximum program size .pio/build/gru/firmware.elf
+Checking size .pio/build/gru/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.7% (used 44968 bytes from 327680 bytes)
+Flash: [======    ]  62.2% (used 814993 bytes from 1310720 bytes)
+Building .pio/build/gru/firmware.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 27 ELF sections
+Successfully created esp32 image.
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyUSB2
+Uploading .pio/build/gru/firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyUSB2
+Connecting....
+Chip is ESP32-D0WD-V3 (revision v3.1)
+Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+Crystal is 40MHz
+MAC: 8c:94:df:92:e6:dc
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00001000 to 0x00005fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x000d8fff...
+Compressed 17536 bytes to 12202...
+Writing at 0x00001000... (100 %)
+Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.4 seconds (effective 355.7 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 146...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.0 seconds (effective 1396.1 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.0 seconds (effective 2123.6 kbit/s)...
+Hash of data verified.
+Compressed 821568 bytes to 533397...
+Writing at 0x00010000... (3 %)
+Writing at 0x0001beed... (6 %)
+Writing at 0x000264e3... (9 %)
+Writing at 0x000327f0... (12 %)
+Writing at 0x00037d3d... (15 %)
+Writing at 0x0003d411... (18 %)
+Writing at 0x00042b9d... (21 %)
+Writing at 0x0004822b... (24 %)
+Writing at 0x0004d417... (27 %)
+Writing at 0x000525e3... (30 %)
+Writing at 0x00057808... (33 %)
+Writing at 0x0005cb4c... (36 %)
+Writing at 0x00061ea5... (39 %)
+Writing at 0x0006735d... (42 %)
+Writing at 0x0006c1f1... (45 %)
+Writing at 0x000715ae... (48 %)
+Writing at 0x00076907... (51 %)
+Writing at 0x0007c572... (54 %)
+Writing at 0x00081ba7... (57 %)
+Writing at 0x00086ed9... (60 %)
+Writing at 0x0008c2ad... (63 %)
+Writing at 0x00091755... (66 %)
+Writing at 0x00096da9... (69 %)
+Writing at 0x0009c634... (72 %)
+Writing at 0x000a2471... (75 %)
+Writing at 0x000a7d7d... (78 %)
+Writing at 0x000ae26a... (81 %)
+Writing at 0x000b8820... (84 %)
+Writing at 0x000bdecb... (87 %)
+Writing at 0x000c35f8... (90 %)
+Writing at 0x000ca634... (93 %)
+Writing at 0x000cfe30... (96 %)
+Writing at 0x000d54f6... (100 %)
+Wrote 821568 bytes (533397 compressed) at 0x00010000 in 13.1 seconds (effective 500.6 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 43.51 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+gru            SUCCESS   00:00:43.506
+========================= 1 succeeded in 00:00:43.506 =========================
+/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py:102: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  self._client = mqtt.Client(client_id="fedkd-server", clean_session=True)
+=======================================================
+  FedKD-MR — Servidor de Federação MQTT
+=======================================================
+  Broker     : 192.168.0.14:1883
+  Clientes   : 3
+  Rounds     : 30
+  Timeout    : 600s
+  Temperatura: 2.0
+  N_CLASSES  : 4
+=======================================================
+  Tópicos:
+    Recebe logits : fedkd/logits/push/<client>
+    Publica cmds  : fedkd/cmd/pull
+    Publica teacher: fedkd/teacher/pull
+=======================================================
+[SERVER] Conectado ao broker 192.168.0.14:1883
+
+==================================================
+[SERVER] === Round 1 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (prob_range=[0.000, 0.964])
+[SERVER] Aguardando logits: 1/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  520s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  520s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  519s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  519s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  518s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  518s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  517s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  517s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  516s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  516s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  515s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  515s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  514s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  514s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  513s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  513s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  512s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  512s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  511s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  511s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  510s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  510s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  509s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  509s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  508s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  508s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  507s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  507s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  506s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  506s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  505s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  505s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  504s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  504s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  503s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  503s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  502s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  502s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  501s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  501s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  500s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  500s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  499s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  499s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  498s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  498s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  497s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  497s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  496s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  496s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  495s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  495s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (prob_range=[0.000, 0.972])
+[SERVER] Aguardando logits: 2/3 clientes  |  494s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  494s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  493s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  493s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  492s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  492s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  491s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  491s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  490s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  490s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  489s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  489s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  488s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  488s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  487s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  487s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  486s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  486s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  485s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  485s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  484s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  484s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  483s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  483s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  482s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  482s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  481s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  481s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  480s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  480s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  479s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  479s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  478s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  478s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  477s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  477s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  476s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  476s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  475s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  475s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  474s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  474s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  473s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  473s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  472s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  472s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  471s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  471s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  470s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  470s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  469s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  469s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  468s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  468s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  467s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  467s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  466s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  466s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  465s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  465s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  464s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  464s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  463s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  463s restantes   [SERVER] Done de FedKD-ESP32-1:  acc_local=0.672  acc_kd=0.649  (Δ=-0.023)  acc_ft=0.677  (Δ=+0.005)
+[SERVER] Aguardando logits: 2/3 clientes  |  462s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  462s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  461s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  461s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  460s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  460s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  459s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  459s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  458s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  458s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  457s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  457s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  456s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  456s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  455s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  455s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  454s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  454s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  453s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  453s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  452s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  452s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  451s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  451s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  450s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  450s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  449s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  449s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  448s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  448s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  447s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  447s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  446s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  446s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  445s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  445s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  444s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  444s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  443s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  443s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  442s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  442s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  441s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  441s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  440s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  440s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  439s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  439s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  438s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  438s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  437s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  437s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  436s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  436s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  435s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  435s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  434s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  434s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  433s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  433s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  432s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  432s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  431s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  431s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  430s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  430s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  429s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  429s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  428s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  428s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  427s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  427s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  426s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  426s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  425s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  425s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  424s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  424s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  423s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  423s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  422s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  422s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  421s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  421s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  420s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  420s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  419s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  419s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  418s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  418s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  417s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  417s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  416s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  416s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  415s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  415s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  414s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  414s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  413s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  413s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  412s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  412s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  411s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  411s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  410s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  410s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  409s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  409s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  408s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  408s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  407s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  407s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  406s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  406s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  405s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  405s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  404s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  404s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  403s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  403s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  402s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  402s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  401s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  401s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  400s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  400s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  399s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  399s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  398s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  398s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  397s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  397s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  396s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  396s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  395s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  395s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  394s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  394s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  393s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  393s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  392s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  392s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  391s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  391s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  390s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  390s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  389s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  389s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  388s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  388s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  387s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  387s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  386s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  386s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  385s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  385s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  384s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  384s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  383s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  383s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  382s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  382s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  381s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  381s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  380s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  380s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  379s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  379s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  378s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  378s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  377s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  377s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  376s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  376s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  375s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  375s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  374s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  374s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  373s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  373s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  372s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  372s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  371s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  371s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  370s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  370s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  369s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  369s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  368s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  368s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  367s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  367s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  366s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  366s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  365s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  365s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  364s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  364s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  363s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  363s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  362s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  362s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  361s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  361s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  360s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  360s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  359s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  359s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  358s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  358s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  357s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  357s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  356s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  356s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  355s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  355s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  354s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  354s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  353s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  353s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  352s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  352s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  351s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  351s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  350s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  350s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  349s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  349s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  348s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  348s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  347s restantes   [SERVER] Done de FedKD-ESP32-3:  acc_local=0.557  acc_kd=0.564  (Δ=+0.007)  acc_ft=0.589  (Δ=+0.032)
+[SERVER] Aguardando logits: 2/3 clientes  |  347s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  346s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  346s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  345s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  345s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  344s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  344s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  343s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  343s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  342s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  342s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  341s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  341s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  340s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  340s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  339s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  339s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  338s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  338s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  337s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  337s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  336s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  336s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  335s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  335s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  334s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  334s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  333s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  333s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  332s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  332s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  331s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  331s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  330s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  330s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  329s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  329s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  328s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  328s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  327s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  327s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  326s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  326s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  325s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  325s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  324s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  324s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  323s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  323s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  322s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  322s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  321s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  321s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  320s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  320s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  319s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  319s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  318s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  318s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  317s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  317s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  316s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  316s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  315s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  315s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  314s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  314s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  313s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  313s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  312s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  312s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  311s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  311s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  310s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  310s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  309s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  309s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  308s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  308s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  307s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  307s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  306s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  306s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  305s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  305s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  304s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  304s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  303s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  303s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  302s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  302s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  301s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  301s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  300s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  300s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  299s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  299s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  298s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  298s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  297s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  297s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  296s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  296s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  295s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  295s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  294s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  294s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  293s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  293s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  292s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  292s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  291s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  290s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  290s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  289s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  289s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  288s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  288s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  287s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  287s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  286s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  286s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  285s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  285s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  284s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  284s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  283s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  283s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  282s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  282s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  281s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  281s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  280s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  280s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  279s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  279s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  278s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  278s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  277s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  277s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  276s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  276s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  275s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  275s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  274s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  274s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  273s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  273s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  272s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  272s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  271s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  271s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  270s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  270s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  269s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  269s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  268s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  268s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  267s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  267s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  266s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  266s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  265s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  265s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  264s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  264s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  263s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  263s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  262s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  262s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  261s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  261s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  260s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  260s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  259s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  259s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  258s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  258s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  257s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  257s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  256s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  256s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  255s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  255s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  254s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  254s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  253s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  253s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  252s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  252s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  251s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  251s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  250s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  250s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  249s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  249s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  248s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  248s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  247s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  247s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  246s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  246s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  245s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  245s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  244s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  244s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  243s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  243s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  242s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  242s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  241s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  241s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  240s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  240s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  239s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  239s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  238s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  238s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  237s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  237s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  236s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  236s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  235s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  235s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  234s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  234s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  233s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  233s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  232s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  232s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  231s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  231s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  230s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  230s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  229s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  229s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  228s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  228s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  227s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  227s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  226s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  226s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  225s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  225s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  224s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  224s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  223s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  223s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  222s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  222s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  221s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  221s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  220s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  220s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  219s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  219s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  218s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  218s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  217s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  217s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  216s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  216s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  215s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  215s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  214s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  214s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  213s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  213s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  212s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  212s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  211s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  211s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  210s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  210s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  209s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  209s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  208s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  208s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  207s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  207s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  206s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  206s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  205s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  205s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  204s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  204s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  203s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  203s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  202s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  202s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  201s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  201s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  200s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  200s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  199s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  199s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  198s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  198s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  197s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  197s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  196s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  196s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  195s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  195s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  194s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  194s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  193s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  193s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  192s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  192s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  191s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  191s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  190s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  190s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  189s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  189s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  188s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  188s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  187s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  187s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  186s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  186s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  185s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  185s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  184s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  184s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  183s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  183s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  182s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  182s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  181s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  181s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  180s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  180s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  179s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  179s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  178s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  178s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  177s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  177s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  176s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  176s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  175s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  175s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  174s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  174s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  173s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  173s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  172s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  172s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  171s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  171s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  170s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  170s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  169s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  169s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  168s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  168s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  167s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  167s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  166s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  166s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  165s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  165s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  164s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  164s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  163s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  163s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  162s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  162s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  161s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  161s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  160s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  160s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  159s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  159s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  158s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  158s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  157s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  157s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  156s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  156s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  155s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  155s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  154s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  154s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  153s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  153s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  152s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  152s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  151s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  151s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  150s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  150s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  149s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  149s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  148s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  148s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  147s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  147s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  146s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  146s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  145s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  145s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  144s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  144s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  143s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  143s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  142s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  142s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  141s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  141s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  140s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  140s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  139s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  139s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  138s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  138s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  137s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  137s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  136s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  136s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  135s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  135s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  134s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  134s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  133s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  133s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  132s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  132s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  131s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  131s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  130s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  130s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  129s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  129s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  128s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  128s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  127s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  127s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  126s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  126s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  125s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  125s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  124s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  124s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  123s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  123s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  122s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  122s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  121s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  121s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  120s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  120s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  119s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  119s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  118s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  118s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  117s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  117s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  116s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  116s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  115s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  115s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  114s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  114s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  113s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  113s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  112s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  112s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  111s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  111s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  110s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  110s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  109s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  109s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  108s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  108s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  107s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  107s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  106s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  106s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  105s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  105s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  104s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  104s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  103s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  103s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  102s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  102s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  101s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  101s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  100s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  100s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  99s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  99s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  98s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  98s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  97s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  97s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  96s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  96s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  95s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  95s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  94s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  94s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  93s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  93s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  92s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  92s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  91s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  91s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  90s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  90s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  89s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  89s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  88s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  88s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  87s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  87s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  86s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  86s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  85s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  85s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  84s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  84s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  83s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  83s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  82s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  82s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  81s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  81s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  80s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  80s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  79s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  79s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  78s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  78s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  77s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  77s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  76s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  76s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  75s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  75s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  74s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  74s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  73s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  73s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  72s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  72s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  71s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  71s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  70s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  70s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  69s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  69s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  68s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  68s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  67s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  67s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  66s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  66s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  65s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  65s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  64s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  64s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  63s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  63s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  62s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  62s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  61s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  61s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  60s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  60s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  59s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  59s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  58s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  58s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  57s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  57s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  56s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  56s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  55s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  55s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  54s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  54s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  53s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  53s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  52s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  52s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  51s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  51s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  50s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  50s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  49s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  49s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  48s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  48s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  47s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  47s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  46s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  46s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  45s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  45s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  44s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  44s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  43s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  43s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  42s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  42s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  41s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  41s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  40s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  40s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  39s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  39s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  38s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  38s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  37s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  37s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  36s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  36s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  35s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  35s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  34s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  34s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  33s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  33s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  32s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  32s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  31s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  31s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  30s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  30s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  29s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  29s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  28s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  28s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  27s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  27s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  26s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  26s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  25s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  25s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  24s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  24s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  23s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  23s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  22s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  22s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  21s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  21s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  20s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  20s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  19s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  19s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  18s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  18s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  17s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  17s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  16s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  16s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  15s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  15s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  14s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  14s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  13s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  13s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  12s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  12s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  11s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  11s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  10s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  10s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  9s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  9s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  8s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  8s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  7s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  7s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  6s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  6s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  5s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  5s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  4s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  4s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  3s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  3s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  2s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  2s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  1s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  1s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  0s restantes   

@@ -48,7 +48,7 @@ except ImportError:
     sys.exit(1)
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
-DEFAULT_BROKER        = "192.168.0.12"
+DEFAULT_BROKER        = "192.168.0.14"
 DEFAULT_PORT          = 1883
 DEFAULT_HTTP          = 8080
 DEFAULT_WS            = 8765
