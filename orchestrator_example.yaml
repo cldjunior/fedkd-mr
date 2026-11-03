@@ -60,7 +60,7 @@ teacher_mlp:
 
 # ── Federação (parâmetros passados ao fedkd_server.py) ───────────────────────
 federation:
-  rounds: 30                   # null = modo contínuo; inteiro = N rounds fixos
+  rounds: 50                   # null = modo contínuo; inteiro = N rounds fixos
   timeout: 600                   # segundos de timeout esperando logits
   inter_round_s: 5.0             # intervalo entre rounds automáticos
 

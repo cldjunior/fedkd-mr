@@ -1,0 +1,13 @@
+ts,client,file,remote_path,bytes,duration_ms,status
+2026-11-02T12:32:29Z,esp32_c1,dataset_pub.bin,/dataset_pub.bin,7700,3280,ok
+2026-11-02T12:32:33Z,esp32_c1,metadata.json,/metadata.json,12284,4789,ok
+2026-11-02T12:32:38Z,esp32_c1,teacher_probs.bin,/teacher_probs.bin,320,242,ok
+2026-11-02T12:32:39Z,esp32_c1,teacher_probs_meta.json,/teacher_probs_meta.json,102,181,ok
+2026-11-02T12:32:43Z,esp32_c2,dataset_pub.bin,/dataset_pub.bin,7700,3062,ok
+2026-11-02T12:32:47Z,esp32_c2,metadata.json,/metadata.json,12284,4736,ok
+2026-11-02T12:32:52Z,esp32_c2,teacher_probs.bin,/teacher_probs.bin,320,497,ok
+2026-11-02T12:32:53Z,esp32_c2,teacher_probs_meta.json,/teacher_probs_meta.json,102,146,ok
+2026-11-02T12:32:58Z,esp32_c3,dataset_pub.bin,/dataset_pub.bin,7700,3054,ok
+2026-11-02T12:33:02Z,esp32_c3,metadata.json,/metadata.json,12284,4780,ok
+2026-11-02T12:33:07Z,esp32_c3,teacher_probs.bin,/teacher_probs.bin,320,487,ok
+2026-11-02T12:33:08Z,esp32_c3,teacher_probs_meta.json,/teacher_probs_meta.json,102,146,ok
