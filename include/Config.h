@@ -85,7 +85,8 @@
 #endif
 
 // ── Caminhos LittleFS ────────────────────────────────────────
-#define XY_TRAIN_PATH           "/dataset_priv.bin"
+#define XY_TRAIN_PATH           "/dataset_train.bin"
+#define XY_TEST_PATH            "/dataset_test.bin"
 #define METADATA_JSON_PATH      "/metadata.json"
 #define XY_PUB_PATH             "/dataset_pub.bin"
 #define TEACHER_PROBS_PATH      "/teacher_probs.bin"
@@ -111,6 +112,7 @@
 #endif
 
 #define TOPIC_LOGITS_PUSH  "fedkd/logits/push/" CLIENT_NAME
+#define TOPIC_IDENTITY_PUSH "fedkd/identity/" CLIENT_NAME
 #define TOPIC_TEACHER_PULL "fedkd/teacher/pull"
 #define TOPIC_CMD_PULL     "fedkd/cmd/pull"
 #define TOPIC_CMD_PUSH     "fedkd/cmd/push/" CLIENT_NAME

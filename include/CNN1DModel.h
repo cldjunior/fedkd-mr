@@ -169,23 +169,35 @@ public:
         return probs;
     }
 
-    void backProp(const float* y_target) override {
-        float dLogits[CNN_CLS];
-        float sq_err = 0.f;
-        for (int k = 0; k < CNN_CLS; k++) {
-            float diff = probs[k] - y_target[k];
-            dLogits[k] = diff;
-            sq_err += diff * diff;
-        }
-        sum_sq_err += sq_err;
+    bool getLogits(float out[N_CLASSES]) const override {
+        for (int k = 0; k < N_CLASSES; ++k) out[k] = logits[k];
+        return true;
+    }
 
+    void backProp(const float* y_target) override {
+        float grad[CNN_CLS]; float sq_err=0.f;
+        for (int k=0;k<CNN_CLS;++k) {
+            grad[k]=probs[k]-y_target[k];
+            sq_err+=grad[k]*grad[k];
+        }
+        sum_sq_err+=sq_err;
+        applyLogitsGradient(grad);
+    }
+
+    float backPropKD(const float* q, float temperature) override {
+        float grad[CNN_CLS], loss=0.f;
+        if(!KDMath::lossGradient(logits,q,CNN_CLS,temperature,grad,loss)) return NAN;
+        applyLogitsGradient(grad);
+        return loss;
+    }
+
+    void applyLogitsGradient(const float* dLogits) {
         float dPool[CNN_CH2] = {};
-        for (int o = 0; o < CNN_CLS; o++) {
-            bd[o] -= lr_b * dLogits[o];
-            for (int i = 0; i < CNN_CH2; i++) {
-                dPool[i] += wd[o][i] * dLogits[o];
-                wd[o][i] -= lr_w * dLogits[o] * pool[i];
-            }
+        for(int o=0;o<CNN_CLS;++o)
+            for(int i=0;i<CNN_CH2;++i) dPool[i]+=wd[o][i]*dLogits[o];
+        for(int o=0;o<CNN_CLS;++o) {
+            bd[o]-=lr_b*dLogits[o];
+            for(int i=0;i<CNN_CH2;++i) wd[o][i]-=lr_w*dLogits[o]*pool[i];
         }
 
         memset(dA2_m, 0, sizeof(dA2_m));
@@ -209,10 +221,22 @@ public:
                             dA1_m[i][ts] += w2[o][i][k] * dZ2_m[o][t];
                         }
                     }
-                    w2[o][i][k] -= lr_w * dw;
+                    // Conv2 update postponed until dA1 was fully propagated.
+                    (void)dw;
                 }
             }
         }
+
+        for (int o=0;o<CNN_CH2;++o)
+            for (int i=0;i<CNN_CH1;++i)
+                for (int k=0;k<CNN_K;++k) {
+                    float dw=0.f;
+                    for(int t=0;t<CNN_T;++t) {
+                        int ts=t+k-1;
+                        if(ts>=0 && ts<CNN_T) dw+=dZ2_m[o][t]*a1[i][ts];
+                    }
+                    w2[o][i][k]-=lr_w*dw;
+                }
 
         for (int o = 0; o < CNN_CH1; o++)
             for (int t = 0; t < CNN_T; t++)

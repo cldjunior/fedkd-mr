@@ -502,7 +502,7 @@
                 "MQTT_KEEPALIVE=60",
                 "CLIENT_ID=1",
                 "LOCAL_EPOCHS=30",
-                "KD_EPOCHS=10",
+                "KD_EPOCHS=8",
                 "FT_EPOCHS=5",
                 "LOCAL_LR_WEIGHTS=0.0005f",
                 "LOCAL_LR_BIASES=0.0005f",

@@ -12,15 +12,18 @@ clients:
   - client_id: 1
     client_name: "esp32_c1"      # deve bater com CLIENT_NAME em Config.h
     port: "/dev/ttyUSB0"         # Linux: /dev/ttyUSBx  |  Mac: /dev/cu.usbserial-x
-    env: "mlp"                   # PlatformIO env: mlp, cnn1d, ou gru
+    env: "mlp"
+    n_private: 303                   # PlatformIO env: mlp, cnn1d, ou gru
   - client_id: 2
     client_name: "esp32_c2"
     port: "/dev/ttyUSB1"
     env: "cnn1d"
+    n_private: 301
   - client_id: 3
     client_name: "esp32_c3"
     port: "/dev/ttyUSB2"
     env: "gru"
+    n_private: 231
   # Adicione até 8 clientes conforme necessário:
   # - client_id: 4
   #   client_name: "esp32_c4"
@@ -43,6 +46,7 @@ server_script: "fedkd_server.py"
 # Diretório onde o orquestrador salva os arquivos compartilhados gerados.
 # Será criado automaticamente se não existir.
 output_dir: "orchestrator_output"
+partition_dir: "bloco5_particoes_v1"
 
 # ── Parâmetros de coleta / geração ────────────────────────────────────────────
 serial_baud: 115200              # baud rate da USB Serial do ESP32
@@ -60,7 +64,10 @@ teacher_mlp:
 
 # ── Federação (parâmetros passados ao fedkd_server.py) ───────────────────────
 federation:
-  rounds: 50                   # null = modo contínuo; inteiro = N rounds fixos
+  sharpening: 0.7  # tau_s; <1 afia o consenso
+  experiment_id: "fedkd-experimento-10r-kd8-ft5"  # altere para cada novo experimento
+  start_round: 1  # na retomada, use N+1 apos N confirmada em todos os ESP32
+  rounds: 10                   # null = modo contínuo; inteiro = N rounds fixos
   timeout: 600                   # segundos de timeout esperando logits
   inter_round_s: 5.0             # intervalo entre rounds automáticos
 

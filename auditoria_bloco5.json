@@ -1,0 +1,50 @@
+{
+  "directory": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/orchestrator_output",
+  "row_bytes": 385,
+  "public_samples": 20,
+  "public_by_class": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5
+  },
+  "private_samples": {
+    "esp32_c1": 399,
+    "esp32_c2": 390,
+    "esp32_c3": 282
+  },
+  "private_by_class": {
+    "esp32_c1": {
+      "1": 107,
+      "2": 91,
+      "3": 105,
+      "4": 96
+    },
+    "esp32_c2": {
+      "1": 100,
+      "2": 80,
+      "3": 95,
+      "4": 115
+    },
+    "esp32_c3": {
+      "1": 69,
+      "2": 65,
+      "3": 78,
+      "4": 70
+    }
+  },
+  "overlap_exact_rows_by_client": {
+    "esp32_c1": 5,
+    "esp32_c2": 11,
+    "esp32_c3": 4
+  },
+  "overlap_exact_rows_total_multiset": 20,
+  "public_unique_rows_in_private": 20,
+  "overlap_same_features_by_client": {
+    "esp32_c1": 5,
+    "esp32_c2": 11,
+    "esp32_c3": 4
+  },
+  "test_files_found_in_output_dir": [],
+  "note": "Sobreposição exata não exclui duplicação semântica, janelas temporais adjacentes ou vazamento temporal. Ausência de arquivo de teste aqui não prova ausência em outros locais."
+}

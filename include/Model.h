@@ -17,6 +17,7 @@
  */
 
 #include "Config.h"
+#include "KDMath.h"
 #include <FS.h>      // File (incluso transitivamente via LittleFS.h — explicitado aqui
                      // para que Model.h compile em contextos sem LittleFS.h no path)
 #include <math.h>
@@ -28,8 +29,14 @@ public:
     // Forward pass — retorna ponteiro interno (válido até próximo feedForward)
     virtual float* feedForward(const float* x) = 0;
 
+    // Logits PRE-softmax da ultima inferencia. Retorna false se nao disponiveis.
+    virtual bool getLogits(float out[N_CLASSES]) const = 0;
+
     // Backward pass — deve ser chamado logo após feedForward
     virtual void backProp(const float* y_target) = 0;
+
+    // Um passo de KD usando T^2 KL(Q || softmax(z/T)); retorna KL escalada; NAN em falha.
+    virtual float backPropKD(const float* q, float temperature) = 0;
 
     // MSE acumulado desde o último reset; n = número de amostras
     virtual float getMSE(int n) = 0;

@@ -1,0 +1,53 @@
+[16:39:33] ============================================================
+[16:39:33]   FedKD-MR Orchestrator
+[16:39:33]   Config: orchestrator_example.yaml
+[16:39:33] ============================================================
+[16:39:33] 
+[16:39:33] ============================================================
+[16:39:33]   FedKD-MR Orchestrator
+[16:39:33] ============================================================
+[16:39:33]   Clientes  : 3
+[16:39:33]   Broker    : 192.168.0.14:1883
+[16:39:33]   ProjDir   : /home/claudio/fedkd-mr-repositorio/fedkd-mr/server
+[16:39:33]   OutDir    : orchestrator_output
+[16:39:33]   Fases     : [1, 2, 3, 4, 5]
+[16:39:33]   Dry-run   : False
+[16:39:33] 
+[16:39:33] ============================================================
+[16:39:33]   Fase 1 — Exportar dataset_priv.bin
+[16:39:33] ============================================================
+[16:39:33] 
+[16:39:33]   Pressione ENTER quando a coleta de dados estiver concluída em TODOS os ESP32...
+[16:40:55]   [+00:02] ✓ Exportando de esp32_c1 (/dev/ttyUSB0)...
+[16:40:55]   [+00:02] ✓ Porta /dev/ttyUSB0 aberta (tentativa 1/3)
+[16:40:55]   [+00:02] ✓   Enviando 'x' para dump de /dev/ttyUSB0...
+[16:40:55]   [+00:03] ✓   DUMP_START: 153615 bytes esperados
+[16:40:55]   [+00:32] ✓   Exportado: 153615 bytes = 399 amostras
+[16:40:55]   [+00:32] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c1.bin
+[16:40:55]   [+00:32] ✓ Exportando de esp32_c2 (/dev/ttyUSB1)...
+[16:40:55]   [+00:32] ✓ Porta /dev/ttyUSB1 aberta (tentativa 1/3)
+[16:40:55]   [+00:32] ✓   Enviando 'x' para dump de /dev/ttyUSB1...
+[16:40:55]   [+00:33] ✓   DUMP_START: 150150 bytes esperados
+[16:40:55]   [+01:01] ✓   Exportado: 150150 bytes = 390 amostras
+[16:40:55]   [+01:01] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c2.bin
+[16:40:55]   [+01:01] ✓ Exportando de esp32_c3 (/dev/ttyUSB2)...
+[16:40:55]   [+01:01] ✓ Porta /dev/ttyUSB2 aberta (tentativa 1/3)
+[16:40:55]   [+01:01] ✓   Enviando 'x' para dump de /dev/ttyUSB2...
+[16:40:55]   [+01:02] ✓   DUMP_START: 108570 bytes esperados
+[16:40:55] Traceback (most recent call last):
+[16:40:55]   File "/home/claudio/fedkd-mr-repositorio/fedkd-mr/fedkd_orchestrator.py", line 306, in export_dataset_priv
+[16:40:55]     hex_data.extend(bytes.fromhex(line))
+[16:40:55] ValueError: non-hexadecimal number found in fromhex() arg at position 30
+[16:40:55] 
+[16:40:55] During handling of the above exception, another exception occurred:
+[16:40:55] 
+[16:40:55] Traceback (most recent call last):
+[16:40:55]   File "/home/claudio/fedkd-mr-repositorio/fedkd-mr/fedkd_orchestrator.py", line 1073, in <module>
+[16:40:55]     main()
+[16:40:55]   File "/home/claudio/fedkd-mr-repositorio/fedkd-mr/fedkd_orchestrator.py", line 1069, in main
+[16:40:55]     orch.run(phases=args.phase, skip_flash=args.skip_flash)
+[16:40:55]   File "/home/claudio/fedkd-mr-repositorio/fedkd-mr/fedkd_orchestrator.py", line 934, in run
+[16:40:55]     data = export_dataset_priv(
+[16:40:55]   File "/home/claudio/fedkd-mr-repositorio/fedkd-mr/fedkd_orchestrator.py", line 308, in export_dataset_priv
+[16:40:55]     raise RuntimeError(f"Linha hex inválida '{line[:20]}...': {e}")
+[16:40:55] RuntimeError: Linha hex inválida '8FC2753E0000803FDBF9...': non-hexadecimal number found in fromhex() arg at position 30

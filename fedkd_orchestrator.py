@@ -12,7 +12,7 @@ Automatiza a transição da coleta de dados para a federação em 5 fases:
   Fase 4 — Grava firmware de federação via PlatformIO (sem apagar LittleFS)
   Fase 5 — Inicia fedkd_server.py como subprocess
 
-RESTRIÇÃO INVIOLÁVEL: fedkd_server.py NUNCA é modificado.
+O Bloco 2 requer fedkd_server_bloco2.py instalado como fedkd_server.py.
 
 Uso:
   python fedkd_orchestrator.py --config orchestrator_example.yaml
@@ -85,6 +85,8 @@ CLASS_NAMES = ["EMPTY", "STATIONARY", "APPROACHING", "LEAVING"]
 # Caminhos dos arquivos no LittleFS do ESP32 (conforme Config.h do main.cpp)
 FS_PATHS = {
     "dataset_pub":      "/dataset_pub.bin",
+    "dataset_train":    "/dataset_train.bin",
+    "dataset_test":     "/dataset_test.bin",
     "metadata":         "/metadata.json",
     "teacher_probs":    "/teacher_probs.bin",
     "teacher_probs_meta": "/teacher_probs_meta.json",
@@ -99,6 +101,7 @@ class ClientConfig:
     client_name: str
     port:        str
     env:         str
+    n_private:   int = 0
 
 
 @dataclass
@@ -110,6 +113,7 @@ class OrchestratorConfig:
     pio_project_dir: Path          # diretório com platformio.ini (para Fase 4)
     server_script:   str
     output_dir:      Path
+    partition_dir: Optional[Path] = None
     serial_baud:     int   = 115200
     n_pub_per_class: int   = 5
     n_classes:       int   = 4
@@ -121,6 +125,9 @@ class OrchestratorConfig:
     mlp_seed:        int   = 42
     # federation params
     fed_rounds:      Optional[int] = None
+    fed_experiment_id: str = ""
+    fed_start_round: int = 1
+    fed_sharpening: float = 0.7
     fed_timeout:     int   = 120
     fed_interval:    float = 5.0
     # transfer params
@@ -145,6 +152,7 @@ def load_config(path: str) -> OrchestratorConfig:
             client_name=c["client_name"],
             port=c["port"],
             env=c["env"],
+            n_private=int(c.get("n_private",0)),
         )
         for c in raw["clients"]
     ]
@@ -162,6 +170,7 @@ def load_config(path: str) -> OrchestratorConfig:
         pio_project_dir=Path(raw.get("pio_project_dir", str(project_dir))),
         server_script=raw.get("server_script", "fedkd_server.py"),
         output_dir=Path(raw.get("output_dir", "orchestrator_output")),
+        partition_dir=Path(raw["partition_dir"]) if raw.get("partition_dir") else None,
         serial_baud=raw.get("serial_baud", 115200),
         n_pub_per_class=raw.get("n_pub_per_class", 5),
         n_classes=raw.get("n_classes", 4),
@@ -171,6 +180,9 @@ def load_config(path: str) -> OrchestratorConfig:
         mlp_max_iter=mlp_cfg.get("max_iter", 300),
         mlp_seed=mlp_cfg.get("random_state", 42),
         fed_rounds=fed_cfg.get("rounds", None),
+        fed_experiment_id=str(fed_cfg.get("experiment_id", "")),
+        fed_start_round=int(fed_cfg.get("start_round", 1)),
+        fed_sharpening=float(fed_cfg.get("sharpening",0.7)),
         fed_timeout=fed_cfg.get("timeout", 120),
         fed_interval=fed_cfg.get("inter_round_s", 5.0),
         export_timeout=xfr_cfg.get("export_timeout_s", 60),
@@ -585,6 +597,39 @@ def generate_shared_files(
     return output_dir
 
 
+
+
+# ═══════ BLOCO 5 — validation of partitioned data ═══════
+def validate_partition(cfg: OrchestratorConfig) -> dict:
+    if cfg.partition_dir is None:
+        raise ValueError('partition_dir ausente no YAML do Bloco 5')
+    root = cfg.partition_dir
+    manifest_path = root / 'manifesto.json'
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    if manifest['format']['row_bytes'] != BPR:
+        raise ValueError('Formato das linhas incompatível com firmware')
+    pub = (root / 'dataset_pub.bin').read_bytes()
+    oldpub = (cfg.output_dir / 'dataset_pub.bin').read_bytes()
+    if pub != oldpub:
+        raise ValueError('D_pub da partição difere do original; metadata e teacher podem ser incompatíveis')
+    if len(pub) != manifest['public']['n'] * BPR:
+        raise ValueError('Contagem de dados públicos inválida')
+    for c in cfg.clients:
+        rec = manifest['clients'][c.client_name]
+        ntrain, ntest = int(rec['train_n']), int(rec['test_n'])
+        if ntrain <= 0 or ntest <= 0:
+            raise ValueError(f'{c.client_name}: partição vazia')
+        for prefix,n in [('train',ntrain),('test',ntest)]:
+            path = root / f'dataset_{prefix}_{c.client_name}.bin'
+            if path.stat().st_size != n * BPR:
+                raise ValueError(f'{path}: tamanho inconsistente com manifesto')
+        if c.n_private != ntrain:
+            raise ValueError(f'{c.client_name}: n_private={c.n_private}, mas train_n={ntrain} no manifesto')
+    meta = json.loads((cfg.output_dir/'metadata.json').read_text())
+    if meta['bytes_per_row'] != BPR or meta['n_pub'] != manifest['public']['n']:
+        raise ValueError('metadata incompatível com partições')
+    return manifest
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # FASE 3 — Upload de arquivos compartilhados para o ESP32
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -702,23 +747,33 @@ def _send_file_to_esp32(
     ser.write(b"UPLOAD_END\n")
     ser.flush()
 
-    # Aguarda UPLOAD_OK / UPLOAD_ERR
-    response = _readline_timeout(ser, 30.0)
-    if response is None:
-        _err("    Timeout aguardando resposta pós-UPLOAD_END")
-        return False
-
-    if response.startswith("UPLOAD_OK"):
-        parts = response.split()
-        recv_bytes = int(parts[1]) if len(parts) > 1 else -1
-        if recv_bytes != n_bytes:
-            _err(f"    UPLOAD_OK mas tamanho diverge: {recv_bytes} ≠ {n_bytes}")
+    # Espera pela resposta de protocolo; o LittleFS pode emitir mensagens
+    # diagnosticas antes do UPLOAD_OK/UPLOAD_ERR, inclusive ao consultar exists().
+    deadline_final = time.monotonic() + 30.0
+    while time.monotonic() < deadline_final:
+        response = _readline_timeout(ser, min(2.0, max(0.01, deadline_final - time.monotonic())))
+        if response is None:
+            continue
+        if "UPLOAD_ERR" in response:
+            _err(f"    ESP32 reportou erro: '{response[response.index('UPLOAD_ERR'):]}'")
             return False
-        _info(f"    UPLOAD_OK {recv_bytes} bytes ✓")
-        return True
-    else:
-        _err(f"    ESP32 respondeu: '{response}'")
-        return False
+        if "UPLOAD_OK" in response:
+            confirmed = response[response.index("UPLOAD_OK"):]
+            parts = confirmed.split()
+            try:
+                recv_bytes = int(parts[1])
+            except (IndexError, ValueError):
+                _err(f"    Resposta UPLOAD_OK inválida: '{response}'")
+                return False
+            if recv_bytes != n_bytes:
+                _err(f"    UPLOAD_OK mas tamanho diverge: {recv_bytes} ≠ {n_bytes}")
+                return False
+            _info(f"    UPLOAD_OK {recv_bytes} bytes ✓")
+            return True
+        if response.strip():
+            _info(f"    Diagnóstico ESP32 (não é ACK): '{response}'")
+    _err("    Timeout aguardando UPLOAD_OK/UPLOAD_ERR após UPLOAD_END")
+    return False
 
 
 _TRANSFER_LOG_HEADER = ["ts", "client", "file", "remote_path", "bytes", "duration_ms", "status"]
@@ -752,14 +807,18 @@ def upload_shared_files(
     dry_run: bool = False,
 ) -> bool:
     """
-    Faz upload dos 4 arquivos compartilhados para um ESP32.
+    Faz upload de treino/teste particionados e arquivos compartilhados para um ESP32.
     Não apaga dataset_priv.bin.
     Registra tempo, tamanho e status de cada arquivo em transfer_log.csv.
     """
+    if cfg.partition_dir is None:
+        raise ValueError('Bloco 5 exige partition_dir; não fazer upload de datasets antigos')
     files_to_upload = [
-        ("dataset_pub",       shared_dir / "dataset_pub.bin"),
-        ("metadata",          shared_dir / "metadata.json"),
-        ("teacher_probs",     shared_dir / "teacher_probs.bin"),
+        ("dataset_train", cfg.partition_dir / f"dataset_train_{client_name}.bin"),
+        ("dataset_test", cfg.partition_dir / f"dataset_test_{client_name}.bin"),
+        ("dataset_pub", cfg.partition_dir / "dataset_pub.bin"),
+        ("metadata", shared_dir / "metadata.json"),
+        ("teacher_probs", shared_dir / "teacher_probs.bin"),
         ("teacher_probs_meta", shared_dir / "teacher_probs_meta.json"),
     ]
 
@@ -860,7 +919,7 @@ def flash_firmware(
 def start_server(cfg: OrchestratorConfig, dry_run: bool = False) -> Optional[subprocess.Popen]:
     """
     Inicia fedkd_server.py como subprocess com os parâmetros do config.
-    NUNCA modifica fedkd_server.py — apenas o invoca.
+    Apenas invoca o servidor; este deve ser a versao compativel com o Bloco 2.
     """
     server_path = cfg.project_dir / cfg.server_script
     if not server_path.exists():
@@ -879,6 +938,29 @@ def start_server(cfg: OrchestratorConfig, dry_run: bool = False) -> Optional[sub
     ]
     if cfg.fed_rounds is not None:
         cmd += ["--rounds", str(cfg.fed_rounds)]
+    if not cfg.fed_experiment_id:
+        _err("  federation.experiment_id ausente: escolha ID unico para novo experimento ou reutilize ao retomar.")
+        return None
+    if cfg.fed_start_round < 1:
+        _err("  federation.start_round deve ser >= 1")
+        return None
+    weights = {}
+    for c in cfg.clients:
+        if c.n_private <= 0:
+            _err(f"  n_private ausente/invalido para cliente {c.client_name}; configure contagem real do D_priv.")
+            return None
+        identity = f"FedKD-ESP32-{c.client_id}" # Config.h: CLIENT_NAME
+        if identity in weights:
+            _err("  client_id duplicado")
+            return None
+        weights[identity] = c.n_private
+    if not (cfg.fed_sharpening > 0):
+        _err("  federation.sharpening deve ser > 0")
+        return None
+    cmd += ["--experiment-id", cfg.fed_experiment_id,
+            "--start-round", str(cfg.fed_start_round),
+            "--sharpening", str(cfg.fed_sharpening),
+            "--client-weights-json", json.dumps(weights, separators=(',',':'))]
 
     _info(f"  Iniciando: {' '.join(cmd)}")
 
@@ -907,6 +989,11 @@ class FedKDOrchestrator:
         """
         if phases is None:
             phases = [1, 2, 3, 4, 5]
+        if self.cfg.partition_dir is not None:
+            if 1 in phases or 2 in phases:
+                raise ValueError('Bloco 5: fases 1/2 proibidas; preservam-se os conjuntos particionados')
+            manifest = validate_partition(self.cfg)
+            _info(f"BLOCO5 manifest validado: D_pub={manifest['public']['n']}; pesos de treino consistentes")
 
         _section("FedKD-MR Orchestrator")
         print(f"  Clientes  : {len(self.cfg.clients)}")

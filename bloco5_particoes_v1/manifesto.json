@@ -1,0 +1,82 @@
+{
+  "format": {
+    "row_bytes": 385,
+    "features_float32": 96,
+    "label_uint8": true
+  },
+  "source": "/home/claudio/fedkd-mr-repositorio/fedkd-mr/orchestrator_output",
+  "seed": 42,
+  "test_fraction_target": 0.2,
+  "warning": "Sem IDs de sessão e timestamps: split sem colisões exatas, mas NÃO garante independência temporal ou entre janelas adjacentes.",
+  "public": {
+    "n": 20,
+    "per_class": {
+      "1": 5,
+      "2": 5,
+      "3": 5,
+      "4": 5
+    }
+  },
+  "clients": {
+    "esp32_c1": {
+      "original": 399,
+      "removed_public_occurrences": 5,
+      "train_n": 303,
+      "test_n": 91,
+      "train_per_class": {
+        "1": 82,
+        "2": 69,
+        "3": 78,
+        "4": 74
+      },
+      "test_per_class": {
+        "1": 24,
+        "2": 20,
+        "3": 27,
+        "4": 20
+      },
+      "train_bytes": 116655,
+      "test_bytes": 35035
+    },
+    "esp32_c2": {
+      "original": 390,
+      "removed_public_occurrences": 11,
+      "train_n": 301,
+      "test_n": 78,
+      "train_per_class": {
+        "1": 77,
+        "2": 67,
+        "3": 71,
+        "4": 86
+      },
+      "test_per_class": {
+        "1": 19,
+        "2": 11,
+        "3": 21,
+        "4": 27
+      },
+      "train_bytes": 115885,
+      "test_bytes": 30030
+    },
+    "esp32_c3": {
+      "original": 282,
+      "removed_public_occurrences": 4,
+      "train_n": 231,
+      "test_n": 47,
+      "train_per_class": {
+        "1": 54,
+        "2": 55,
+        "3": 61,
+        "4": 61
+      },
+      "test_per_class": {
+        "1": 15,
+        "2": 9,
+        "3": 15,
+        "4": 8
+      },
+      "train_bytes": 88935,
+      "test_bytes": 18095
+    }
+  }
+}

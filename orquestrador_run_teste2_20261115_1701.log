@@ -1,0 +1,681 @@
+[17:01:52] ============================================================
+[17:01:52]   FedKD-MR Orchestrator
+[17:01:52]   Config: orchestrator_example.yaml
+[17:01:52] ============================================================
+[17:01:52] 
+[17:01:52] ============================================================
+[17:01:52]   FedKD-MR Orchestrator
+[17:01:52] ============================================================
+[17:01:52]   Clientes  : 3
+[17:01:52]   Broker    : 192.168.0.14:1883
+[17:01:52]   ProjDir   : /home/claudio/fedkd-mr-repositorio/fedkd-mr/server
+[17:01:52]   OutDir    : orchestrator_output
+[17:01:52]   Fases     : [1, 2, 3, 4, 5]
+[17:01:52]   Dry-run   : False
+[17:01:52] 
+[17:01:52] ============================================================
+[17:01:52]   Fase 1 — Exportar dataset_priv.bin
+[17:01:52] ============================================================
+[17:01:52] 
+[17:01:52]   Pressione ENTER quando a coleta de dados estiver concluída em TODOS os ESP32...
+[17:03:21]   [+00:02] ✓ Exportando de esp32_c1 (/dev/ttyUSB0)...
+[17:03:21]   [+00:02] ✓ Porta /dev/ttyUSB0 aberta (tentativa 1/3)
+[17:03:21]   [+00:02] ✓   Enviando 'x' para dump de /dev/ttyUSB0...
+[17:03:21]   [+00:04] ✓   DUMP_START: 153615 bytes esperados
+[17:03:21]   [+00:32] ✓   Exportado: 153615 bytes = 399 amostras
+[17:03:21]   [+00:32] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c1.bin
+[17:03:21]   [+00:32] ✓ Exportando de esp32_c2 (/dev/ttyUSB1)...
+[17:03:21]   [+00:32] ✓ Porta /dev/ttyUSB1 aberta (tentativa 1/3)
+[17:03:21]   [+00:32] ✓   Enviando 'x' para dump de /dev/ttyUSB1...
+[17:03:21]   [+00:34] ✓   DUMP_START: 150150 bytes esperados
+[17:03:21]   [+01:01] ✓   Exportado: 150150 bytes = 390 amostras
+[17:03:21]   [+01:01] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c2.bin
+[17:03:21]   [+01:01] ✓ Exportando de esp32_c3 (/dev/ttyUSB2)...
+[17:03:21]   [+01:01] ✓ Porta /dev/ttyUSB2 aberta (tentativa 1/3)
+[17:03:21]   [+01:01] ✓   Enviando 'x' para dump de /dev/ttyUSB2...
+[17:03:21]   [+01:03] ✓   DUMP_START: 108570 bytes esperados
+[17:03:21]   [+01:23] ✓   Exportado: 108570 bytes = 282 amostras
+[17:03:21]   [+01:23] ✓   Backup salvo: orchestrator_output/dataset_priv_esp32_c3.bin
+[17:03:21]   [+01:23] ✓ Fase 1 concluída.
+[17:03:21] 
+[17:03:21] ============================================================
+[17:03:21]   Fase 2 — Gerar arquivos compartilhados
+[17:03:21] ============================================================
+[17:03:21]   [+01:23] ✓   esp32_c1: 399 amostras — {'EMPTY': 107, 'STATIONARY': 91, 'APPROACHING': 105, 'LEAVING': 96}
+[17:03:21]   [+01:23] ✓   esp32_c2: 390 amostras — {'EMPTY': 100, 'STATIONARY': 80, 'APPROACHING': 95, 'LEAVING': 115}
+[17:03:21]   [+01:23] ✓   esp32_c3: 282 amostras — {'EMPTY': 69, 'STATIONARY': 65, 'APPROACHING': 78, 'LEAVING': 70}
+[17:03:21]   [+01:23] ✓   D_pub: 20 amostras (5 × 4 classes)
+[17:03:21]   [+01:23] ✓   Gerando teacher_probs (MLP ensemble)...
+[17:03:21]   [+01:23] ✓   Treinando MLP para esp32_c1 (399 amostras)...
+[17:03:21]   [+01:23] ✓     Pronto. Score treino: 0.742
+[17:03:21]   [+01:23] ✓   Treinando MLP para esp32_c2 (390 amostras)...
+[17:03:21]   [+01:23] ✓     Pronto. Score treino: 0.728
+[17:03:21]   [+01:23] ✓   Treinando MLP para esp32_c3 (282 amostras)...
+[17:03:21]   [+01:23] ✓     Pronto. Score treino: 0.606
+[17:03:21]   [+01:23] ✓   Teacher probs: H_médio=1.353  prob_range=[0.127, 0.377]
+[17:03:21]   [+01:23] ✓   dataset_pub.bin: 7700 bytes
+[17:03:21]   [+01:23] ✓   teacher_probs.bin: 320 bytes (20 × 4 × 4)
+[17:03:21]   [+01:23] ✓   teacher_probs_meta.json: {'n_pub': 20, 'n_classes': 4, 'temperature': 2.0, 'bytes_per_row': 16, 'total_bytes': 320}
+[17:03:21]   [+01:23] ✓   metadata.json: 97 colunas, bytes_per_row=385
+[17:03:21]   [+01:23] ✓ Fase 2 concluída → orchestrator_output
+[17:03:21] 
+[17:03:21] ============================================================
+[17:03:21]   Fase 3 — Upload de arquivos compartilhados
+[17:03:21] ============================================================
+[17:03:21]   [+01:23] ✓ Enviando para esp32_c1 (/dev/ttyUSB0)...
+[17:03:21]   [+01:23] ✓ Porta /dev/ttyUSB0 aberta (tentativa 1/3)
+[17:03:21]   [+01:23] ✓   Aguardando ESP32 inicializar (4s)...
+[17:03:21]   [+01:28] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+[17:03:21]   [+01:28] ✓     ESP32 (descartado antes de UPLOAD_READY): 'E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:03:24]         0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+[17:03:24]   [+01:31] ✓     UPLOAD_OK 7700 bytes ✓
+[17:03:24]   [+01:31] ✓     → transfer_log: dataset_pub.bin 7700B 3148ms [ok]
+[17:03:24]   [+01:31] ✓     → UPLOAD /metadata.json (12284 bytes)
+[17:03:35]         0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   
+[17:03:35]   [+01:36] ✓     UPLOAD_OK 12284 bytes ✓
+[17:03:35]   [+01:36] ✓     → transfer_log: metadata.json 12284B 4897ms [ok]
+[17:03:35]   [+01:37] ✓     → UPLOAD /teacher_probs.bin (320 bytes)
+[17:03:35] 
+[17:03:35]   [+01:37] ✓     UPLOAD_OK 320 bytes ✓
+[17:03:35]   [+01:37] ✓     → transfer_log: teacher_probs.bin 320B 535ms [ok]
+[17:03:35]   [+01:38] ✓     → UPLOAD /teacher_probs_meta.json (102 bytes)
+[17:03:35] 
+[17:03:35]   [+01:38] ✓     UPLOAD_OK 102 bytes ✓
+[17:03:35]   [+01:38] ✓     → transfer_log: teacher_probs_meta.json 102B 149ms [ok]
+[17:03:35]   [+01:38] ✓ Enviando para esp32_c2 (/dev/ttyUSB1)...
+[17:03:35]   [+01:38] ✓ Porta /dev/ttyUSB1 aberta (tentativa 1/3)
+[17:03:35]   [+01:38] ✓   Aguardando ESP32 inicializar (4s)...
+[17:03:35]   [+01:42] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+[17:03:35]   [+01:42] ✓     ESP32 (descartado antes de UPLOAD_READY): 'E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:03:39]         0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+[17:03:39]   [+01:45] ✓     UPLOAD_OK 7700 bytes ✓
+[17:03:39]   [+01:45] ✓     → transfer_log: dataset_pub.bin 7700B 3000ms [ok]
+[17:03:39]   [+01:46] ✓     → UPLOAD /metadata.json (12284 bytes)
+[17:03:39]   [+01:46] ✓     ESP32 (descartado antes de UPLOAD_READY): 'E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:03:50]         0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   
+[17:03:50]   [+01:51] ✓     UPLOAD_OK 12284 bytes ✓
+[17:03:50]   [+01:51] ✓     → transfer_log: metadata.json 12284B 4738ms [ok]
+[17:03:50]   [+01:51] ✓     → UPLOAD /teacher_probs.bin (320 bytes)
+[17:03:50] 
+[17:03:50]   [+01:51] ✓     UPLOAD_OK 320 bytes ✓
+[17:03:50]   [+01:51] ✓     → transfer_log: teacher_probs.bin 320B 253ms [ok]
+[17:03:50]   [+01:52] ✓     → UPLOAD /teacher_probs_meta.json (102 bytes)
+[17:03:50]   [+01:52] ✓     ESP32 (descartado antes de UPLOAD_READY): '[GRAVANDO] Label: (nenhum)      E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:03:50] 
+[17:03:50]   [+01:52] ✓     UPLOAD_OK 102 bytes ✓
+[17:03:50]   [+01:52] ✓     → transfer_log: teacher_probs_meta.json 102B 181ms [ok]
+[17:03:50]   [+01:53] ✓ Enviando para esp32_c3 (/dev/ttyUSB2)...
+[17:03:50]   [+01:53] ✓ Porta /dev/ttyUSB2 aberta (tentativa 1/3)
+[17:03:50]   [+01:53] ✓   Aguardando ESP32 inicializar (4s)...
+[17:03:50]   [+01:57] ✓     → UPLOAD /dataset_pub.bin (7700 bytes)
+[17:03:50]   [+01:57] ✓     ESP32 (descartado antes de UPLOAD_READY): '[GRAVANDO] Label: (nenhum)      E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:03:53]         0%  (0/241 linhas)           9%  (24/241 linhas)          19%  (48/241 linhas)          29%  (72/241 linhas)          39%  (96/241 linhas)          49%  (120/241 linhas)          59%  (144/241 linhas)          69%  (168/241 linhas)          79%  (192/241 linhas)          89%  (216/241 linhas)          99%  (240/241 linhas)   
+[17:03:53]   [+02:00] ✓     UPLOAD_OK 7700 bytes ✓
+[17:03:53]   [+02:00] ✓     → transfer_log: dataset_pub.bin 7700B 3020ms [ok]
+[17:03:53]   [+02:00] ✓     → UPLOAD /metadata.json (12284 bytes)
+[17:03:53]   [+02:00] ✓     ESP32 (descartado antes de UPLOAD_READY): 'E:  0 S:  0 A:  0 L:  0  Total:   0  buf:0/8'
+[17:04:01]         0%  (0/384 linhas)           9%  (38/384 linhas)          19%  (76/384 linhas)          29%  (114/384 linhas)          39%  (152/384 linhas)          49%  (190/384 linhas)          59%  (228/384 linhas)          69%  (266/384 linhas)          79%  (304/384 linhas)          89%  (342/384 linhas)          98%  (380/384 linhas)   ********************************************************************************
+[17:04:01] Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+[17:04:01] Please remove multiple PIO Cores from a system:
+[17:04:01] https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+[17:04:01] ********************************************************************************
+[17:04:01] Processing mlp (platform: espressif32; board: esp32dev; framework: arduino)
+[17:04:01] --------------------------------------------------------------------------------
+[17:04:01] Verbose mode can be enabled via `-v, --verbose` option
+[17:04:01] CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+[17:04:01] PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+[17:04:01] HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+[17:04:01] DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+[17:04:01] PACKAGES: 
+[17:04:01]  - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+[17:04:01]  - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+[17:04:01]  - tool-mkfatfs @ 2.0.1 
+[17:04:01]  - tool-mklittlefs @ 1.203.210628 (2.3) 
+[17:04:01]  - tool-mkspiffs @ 2.230.0 (2.30) 
+[17:04:01]  - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+[17:04:02] LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+[17:04:02] LDF Modes: Finder ~ chain, Compatibility ~ soft
+[17:04:02] Found 36 compatible libraries
+[17:04:02] Scanning dependencies...
+[17:04:02] Dependency Graph
+[17:04:02] |-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+[17:04:02] |-- ArduinoJson @ 7.4.3
+[17:04:02] |-- PubSubClient @ 2.8.0
+[17:04:02] |-- LittleFS @ 2.0.0
+[17:04:02] |-- WiFi @ 2.0.0
+[17:04:02] |-- FS @ 2.0.0
+[17:04:02] Building in release mode
+[17:04:03] Compiling .pio/build/mlp/src/main.cpp.o
+[17:04:04] <command-line>: warning: "LOCAL_LR_WEIGHTS" redefined
+[17:04:04] <command-line>: note: this is the location of the previous definition
+[17:04:04] <command-line>: warning: "LOCAL_LR_BIASES" redefined
+[17:04:04] <command-line>: note: this is the location of the previous definition
+[17:04:04] In file included from include/MLPModel.h:22,
+[17:04:04]                  from src/main.cpp:42:
+[17:04:04] .pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:31: warning: "SD_NN_WRITE_MODE" redefined
+[17:04:04]  #define SD_NN_WRITE_MODE O_WRITE | O_CREAT
+[17:04:04]  
+[17:04:04] In file included from src/main.cpp:38:
+[17:04:04] .pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:38: note: this is the location of the previous definition
+[17:04:04]      #define SD_NN_WRITE_MODE "w"
+[17:04:04]  
+[17:04:05] In file included from src/main.cpp:38:
+[17:04:05] .pio/libdeps/mlp/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+[17:04:05]  𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+[17:04:05]  
+[17:04:05] - " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+[17:04:05] - " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+[17:04:05] 
+[17:04:05]  𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+[17:04:05] 
+[17:04:05] 
+[17:04:05]  #pragma message( STR(INFORMATION) )
+[17:04:05]                                    ^
+[17:04:08] Linking .pio/build/mlp/firmware.elf
+[17:04:14] Retrieving maximum program size .pio/build/mlp/firmware.elf
+[17:04:14] Checking size .pio/build/mlp/firmware.elf
+[17:04:14] Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+[17:04:14] RAM:   [=         ]  13.7% (used 44984 bytes from 327680 bytes)
+[17:04:14] Flash: [======    ]  62.2% (used 814689 bytes from 1310720 bytes)
+[17:04:14] Building .pio/build/mlp/firmware.bin
+[17:04:15] esptool.py v4.5.1
+[17:04:15] Creating esp32 image...
+[17:04:15] Merged 27 ELF sections
+[17:04:15] Successfully created esp32 image.
+[17:04:15] Configuring upload protocol...
+[17:04:15] AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+[17:04:15] CURRENT: upload_protocol = esptool
+[17:04:15] Looking for upload port...
+[17:04:15] Using manually specified: /dev/ttyUSB0
+[17:04:15] Uploading .pio/build/mlp/firmware.bin
+[17:04:15] esptool.py v4.5.1
+[17:04:15] Serial port /dev/ttyUSB0
+[17:04:16] Connecting.....
+[17:04:16] Chip is ESP32-D0WD-V3 (revision v3.1)
+[17:04:16] Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+[17:04:16] Crystal is 40MHz
+[17:04:16] MAC: 8c:94:df:92:bf:88
+[17:04:16] Uploading stub...
+[17:04:16] Running stub...
+[17:04:16] Stub running...
+[17:04:16] Changing baud rate to 460800
+[17:04:16] Changed.
+[17:04:16] Configuring flash size...
+[17:04:16] Flash will be erased from 0x00001000 to 0x00005fff...
+[17:04:16] Flash will be erased from 0x00008000 to 0x00008fff...
+[17:04:16] Flash will be erased from 0x0000e000 to 0x0000ffff...
+[17:04:16] Flash will be erased from 0x00010000 to 0x000d8fff...
+[17:04:16] Compressed 17536 bytes to 12202...
+[17:04:16] Writing at 0x00001000... (100 %)
+[17:04:16] Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.6 seconds (effective 249.3 kbit/s)...
+[17:04:16] Hash of data verified.
+[17:04:16] Compressed 3072 bytes to 146...
+[17:04:16] Writing at 0x00008000... (100 %)
+[17:04:16] Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.1 seconds (effective 489.9 kbit/s)...
+[17:04:16] Hash of data verified.
+[17:04:16] Compressed 8192 bytes to 47...
+[17:04:16] Writing at 0x0000e000... (100 %)
+[17:04:16] Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 682.0 kbit/s)...
+[17:04:16] Hash of data verified.
+[17:04:16] Compressed 821264 bytes to 532925...
+[17:04:16] Writing at 0x00010000... (3 %)
+[17:04:17] Writing at 0x0001be33... (6 %)
+[17:04:17] Writing at 0x000264dd... (9 %)
+[17:04:18] Writing at 0x0003266f... (12 %)
+[17:04:18] Writing at 0x00037d07... (15 %)
+[17:04:19] Writing at 0x0003d3df... (18 %)
+[17:04:19] Writing at 0x00042b7e... (21 %)
+[17:04:20] Writing at 0x00048215... (24 %)
+[17:04:20] Writing at 0x0004d3fd... (27 %)
+[17:04:20] Writing at 0x000525b4... (30 %)
+[17:04:21] Writing at 0x000577ef... (33 %)
+[17:04:21] Writing at 0x0005cb3b... (36 %)
+[17:04:22] Writing at 0x00061e9c... (39 %)
+[17:04:22] Writing at 0x00067366... (42 %)
+[17:04:22] Writing at 0x0006c1ed... (45 %)
+[17:04:23] Writing at 0x000715b7... (48 %)
+[17:04:23] Writing at 0x00076900... (51 %)
+[17:04:24] Writing at 0x0007c573... (54 %)
+[17:04:24] Writing at 0x00081bae... (57 %)
+[17:04:24] Writing at 0x00086eeb... (60 %)
+[17:04:25] Writing at 0x0008c2c8... (63 %)
+[17:04:25] Writing at 0x00091764... (66 %)
+[17:04:26] Writing at 0x00096da2... (69 %)
+[17:04:26] Writing at 0x0009c620... (72 %)
+[17:04:26] Writing at 0x000a242a... (75 %)
+[17:04:27] Writing at 0x000a7d74... (78 %)
+[17:04:27] Writing at 0x000ae2c4... (81 %)
+[17:04:28] Writing at 0x000b87a0... (84 %)
+[17:04:28] Writing at 0x000bde0a... (87 %)
+[17:04:28] Writing at 0x000c3764... (90 %)
+[17:04:29] Writing at 0x000ca7b7... (93 %)
+[17:04:29] Writing at 0x000cff75... (96 %)
+[17:04:30] Writing at 0x000d5709... (100 %)
+[17:04:31] Wrote 821264 bytes (532925 compressed) at 0x00010000 in 13.4 seconds (effective 489.3 kbit/s)...
+[17:04:31] Hash of data verified.
+[17:04:31] 
+[17:04:31] Leaving...
+[17:04:31] Hard resetting via RTS pin...
+[17:04:32] ========================= [SUCCESS] Took 31.16 seconds =========================
+[17:04:32] 
+[17:04:32] Environment    Status    Duration
+[17:04:32] -------------  --------  ------------
+[17:04:32] mlp            SUCCESS   00:00:31.157
+[17:04:32] ========================= 1 succeeded in 00:00:31.157 =========================
+[17:04:34] ********************************************************************************
+[17:04:34] Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+[17:04:34] Please remove multiple PIO Cores from a system:
+[17:04:34] https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+[17:04:34] ********************************************************************************
+[17:04:34] Processing cnn1d (platform: espressif32; board: esp32dev; framework: arduino)
+[17:04:34] --------------------------------------------------------------------------------
+[17:04:35] Verbose mode can be enabled via `-v, --verbose` option
+[17:04:35] CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+[17:04:35] PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+[17:04:35] HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+[17:04:35] DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+[17:04:35] PACKAGES: 
+[17:04:35]  - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+[17:04:35]  - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+[17:04:35]  - tool-mkfatfs @ 2.0.1 
+[17:04:35]  - tool-mklittlefs @ 1.203.210628 (2.3) 
+[17:04:35]  - tool-mkspiffs @ 2.230.0 (2.30) 
+[17:04:35]  - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+[17:04:36] LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+[17:04:36] LDF Modes: Finder ~ chain, Compatibility ~ soft
+[17:04:36] Found 36 compatible libraries
+[17:04:36] Scanning dependencies...
+[17:04:36] Dependency Graph
+[17:04:36] |-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+[17:04:36] |-- ArduinoJson @ 7.4.3
+[17:04:36] |-- PubSubClient @ 2.8.0
+[17:04:36] |-- LittleFS @ 2.0.0
+[17:04:36] |-- WiFi @ 2.0.0
+[17:04:36] |-- FS @ 2.0.0
+[17:04:36] Building in release mode
+[17:04:38] Compiling .pio/build/cnn1d/src/main.cpp.o
+[17:04:39] In file included from include/MLPModel.h:22,
+[17:04:39]                  from src/main.cpp:42:
+[17:04:39] .pio/libdeps/cnn1d/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+[17:04:39]  𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+[17:04:39]  
+[17:04:39] - " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+[17:04:39] - " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+[17:04:39] 
+[17:04:39]  𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+[17:04:39] 
+[17:04:39] 
+[17:04:39]  #pragma message( STR(INFORMATION) )
+[17:04:39]                                    ^
+[17:04:42] Linking .pio/build/cnn1d/firmware.elf
+[17:04:49] Retrieving maximum program size .pio/build/cnn1d/firmware.elf
+[17:04:49] Checking size .pio/build/cnn1d/firmware.elf
+[17:04:49] Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+[17:04:49] RAM:   [=         ]  13.7% (used 44968 bytes from 327680 bytes)
+[17:04:49] Flash: [======    ]  62.1% (used 814233 bytes from 1310720 bytes)
+[17:04:49] Building .pio/build/cnn1d/firmware.bin
+[17:04:49] esptool.py v4.5.1
+[17:04:49] Creating esp32 image...
+[17:04:49] Merged 27 ELF sections
+[17:04:49] Successfully created esp32 image.
+[17:04:49] Configuring upload protocol...
+[17:04:49] AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+[17:04:49] CURRENT: upload_protocol = esptool
+[17:04:49] Looking for upload port...
+[17:04:49] Using manually specified: /dev/ttyUSB1
+[17:04:49] Uploading .pio/build/cnn1d/firmware.bin
+[17:04:49] esptool.py v4.5.1
+[17:04:49] Serial port /dev/ttyUSB1
+[17:04:50] Connecting....
+[17:04:50] Chip is ESP32-D0WD-V3 (revision v3.1)
+[17:04:50] Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+[17:04:50] Crystal is 40MHz
+[17:04:50] MAC: 8c:94:df:93:a7:90
+[17:04:50] Uploading stub...
+[17:04:50] Running stub...
+[17:04:50] Stub running...
+[17:04:50] Changing baud rate to 460800
+[17:04:50] Changed.
+[17:04:50] Configuring flash size...
+[17:04:50] Flash will be erased from 0x00001000 to 0x00005fff...
+[17:04:50] Flash will be erased from 0x00008000 to 0x00008fff...
+[17:04:50] Flash will be erased from 0x0000e000 to 0x0000ffff...
+[17:04:50] Flash will be erased from 0x00010000 to 0x000d8fff...
+[17:04:50] Compressed 17536 bytes to 12202...
+[17:04:50] Writing at 0x00001000... (100 %)
+[17:04:50] Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.4 seconds (effective 358.3 kbit/s)...
+[17:04:50] Hash of data verified.
+[17:04:50] Compressed 3072 bytes to 146...
+[17:04:50] Writing at 0x00008000... (100 %)
+[17:04:50] Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.0 seconds (effective 1439.4 kbit/s)...
+[17:04:50] Hash of data verified.
+[17:04:50] Compressed 8192 bytes to 47...
+[17:04:50] Writing at 0x0000e000... (100 %)
+[17:04:51] Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.0 seconds (effective 2165.6 kbit/s)...
+[17:04:51] Hash of data verified.
+[17:04:51] Compressed 820816 bytes to 532824...
+[17:04:51] Writing at 0x00010000... (3 %)
+[17:04:51] Writing at 0x0001be71... (6 %)
+[17:04:51] Writing at 0x00026517... (9 %)
+[17:04:52] Writing at 0x00032745... (12 %)
+[17:04:52] Writing at 0x00037c44... (15 %)
+[17:04:53] Writing at 0x0003d32c... (18 %)
+[17:04:53] Writing at 0x00042ac7... (21 %)
+[17:04:53] Writing at 0x0004814e... (24 %)
+[17:04:54] Writing at 0x0004d348... (27 %)
+[17:04:54] Writing at 0x000524f7... (30 %)
+[17:04:55] Writing at 0x0005771f... (33 %)
+[17:04:55] Writing at 0x0005ca60... (36 %)
+[17:04:55] Writing at 0x00061dbc... (39 %)
+[17:04:56] Writing at 0x00067289... (42 %)
+[17:04:56] Writing at 0x0006c118... (45 %)
+[17:04:57] Writing at 0x000714d6... (48 %)
+[17:04:57] Writing at 0x0007682e... (51 %)
+[17:04:57] Writing at 0x0007c4b2... (54 %)
+[17:04:58] Writing at 0x00081ad2... (57 %)
+[17:04:58] Writing at 0x00086e14... (60 %)
+[17:04:59] Writing at 0x0008c1f3... (63 %)
+[17:04:59] Writing at 0x00091685... (66 %)
+[17:04:59] Writing at 0x00096ce3... (69 %)
+[17:05:00] Writing at 0x0009c56f... (72 %)
+[17:05:00] Writing at 0x000a236a... (75 %)
+[17:05:01] Writing at 0x000a7d5d... (78 %)
+[17:05:01] Writing at 0x000ae219... (81 %)
+[17:05:01] Writing at 0x000b8724... (84 %)
+[17:05:02] Writing at 0x000bdd6c... (87 %)
+[17:05:02] Writing at 0x000c365f... (90 %)
+[17:05:03] Writing at 0x000ca6c1... (93 %)
+[17:05:03] Writing at 0x000cfe32... (96 %)
+[17:05:03] Writing at 0x000d5572... (100 %)
+[17:05:05] Wrote 820816 bytes (532824 compressed) at 0x00010000 in 13.1 seconds (effective 502.0 kbit/s)...
+[17:05:05] Hash of data verified.
+[17:05:05] 
+[17:05:05] Leaving...
+[17:05:05] Hard resetting via RTS pin...
+[17:05:06] ========================= [SUCCESS] Took 31.05 seconds =========================
+[17:05:06] 
+[17:05:06] Environment    Status    Duration
+[17:05:06] -------------  --------  ------------
+[17:05:06] cnn1d          SUCCESS   00:00:31.046
+[17:05:06] ========================= 1 succeeded in 00:00:31.046 =========================
+[17:05:08] ********************************************************************************
+[17:05:08] Obsolete PIO Core v6.1.17 is used (previous was 6.2.0)
+[17:05:08] Please remove multiple PIO Cores from a system:
+[17:05:08] https://docs.platformio.org/en/latest/core/installation/troubleshooting.html
+[17:05:08] ********************************************************************************
+[17:05:08] Processing gru (platform: espressif32; board: esp32dev; framework: arduino)
+[17:05:08] --------------------------------------------------------------------------------
+[17:05:09] Verbose mode can be enabled via `-v, --verbose` option
+[17:05:09] CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+[17:05:09] PLATFORM: Espressif 32 (6.10.0) > Espressif ESP32 Dev Module
+[17:05:09] HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+[17:05:09] DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+[17:05:09] PACKAGES: 
+[17:05:09]  - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+[17:05:09]  - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+[17:05:09]  - tool-mkfatfs @ 2.0.1 
+[17:05:09]  - tool-mklittlefs @ 1.203.210628 (2.3) 
+[17:05:09]  - tool-mkspiffs @ 2.230.0 (2.30) 
+[17:05:09]  - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+[17:05:09] LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+[17:05:09] LDF Modes: Finder ~ chain, Compatibility ~ soft
+[17:05:09] Found 36 compatible libraries
+[17:05:09] Scanning dependencies...
+[17:05:10] Dependency Graph
+[17:05:10] |-- NeuralNetwork @ 4.1.9+sha.1bc04f0
+[17:05:10] |-- ArduinoJson @ 7.4.3
+[17:05:10] |-- PubSubClient @ 2.8.0
+[17:05:10] |-- LittleFS @ 2.0.0
+[17:05:10] |-- WiFi @ 2.0.0
+[17:05:10] |-- FS @ 2.0.0
+[17:05:10] Building in release mode
+[17:05:11] Compiling .pio/build/gru/src/main.cpp.o
+[17:05:12] In file included from include/MLPModel.h:22,
+[17:05:12]                  from src/main.cpp:42:
+[17:05:12] .pio/libdeps/gru/NeuralNetwork/src/NeuralNetwork.h:1301:35: note: #pragma message: 
+[17:05:12]  𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 "VERSION: 4.1.9-Alpha"
+[17:05:12]  
+[17:05:12] - " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)." 
+[17:05:12] - " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax." 
+[17:05:12] 
+[17:05:12]  𝗨𝗦𝗜𝗡𝗚 [𝗗𝗘𝗡𝗦𝗘] [ƒx] |> Sigmoid |> Tanh |> ReLU |> LeakyReLU |> ELU |> SELU |> Softmax |~|
+[17:05:12] 
+[17:05:12] 
+[17:05:12]  #pragma message( STR(INFORMATION) )
+[17:05:12]                                    ^
+[17:05:15] Linking .pio/build/gru/firmware.elf
+[17:05:22] Retrieving maximum program size .pio/build/gru/firmware.elf
+[17:05:22] Checking size .pio/build/gru/firmware.elf
+[17:05:22] Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+[17:05:22] RAM:   [=         ]  13.7% (used 44968 bytes from 327680 bytes)
+[17:05:22] Flash: [======    ]  62.3% (used 816133 bytes from 1310720 bytes)
+[17:05:22] Building .pio/build/gru/firmware.bin
+[17:05:22] esptool.py v4.5.1
+[17:05:22] Creating esp32 image...
+[17:05:22] Merged 27 ELF sections
+[17:05:22] Successfully created esp32 image.
+[17:05:22] Configuring upload protocol...
+[17:05:22] AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+[17:05:22] CURRENT: upload_protocol = esptool
+[17:05:22] Looking for upload port...
+[17:05:22] Using manually specified: /dev/ttyUSB2
+[17:05:22] Uploading .pio/build/gru/firmware.bin
+[17:05:22] esptool.py v4.5.1
+[17:05:22] Serial port /dev/ttyUSB2
+[17:05:23] Connecting.....
+[17:05:23] Chip is ESP32-D0WD-V3 (revision v3.1)
+[17:05:23] Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+[17:05:23] Crystal is 40MHz
+[17:05:23] MAC: 8c:94:df:92:e6:dc
+[17:05:23] Uploading stub...
+[17:05:23] Running stub...
+[17:05:23] Stub running...
+[17:05:23] Changing baud rate to 460800
+[17:05:23] Changed.
+[17:05:23] Configuring flash size...
+[17:05:23] Flash will be erased from 0x00001000 to 0x00005fff...
+[17:05:23] Flash will be erased from 0x00008000 to 0x00008fff...
+[17:05:23] Flash will be erased from 0x0000e000 to 0x0000ffff...
+[17:05:23] Flash will be erased from 0x00010000 to 0x000d8fff...
+[17:05:23] Compressed 17536 bytes to 12202...
+[17:05:23] Writing at 0x00001000... (100 %)
+[17:05:24] Wrote 17536 bytes (12202 compressed) at 0x00001000 in 0.4 seconds (effective 358.8 kbit/s)...
+[17:05:24] Hash of data verified.
+[17:05:24] Compressed 3072 bytes to 146...
+[17:05:24] Writing at 0x00008000... (100 %)
+[17:05:24] Wrote 3072 bytes (146 compressed) at 0x00008000 in 0.0 seconds (effective 1375.8 kbit/s)...
+[17:05:24] Hash of data verified.
+[17:05:24] Compressed 8192 bytes to 47...
+[17:05:24] Writing at 0x0000e000... (100 %)
+[17:05:24] Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.0 seconds (effective 2112.3 kbit/s)...
+[17:05:24] Hash of data verified.
+[17:05:24] Compressed 822704 bytes to 534170...
+[17:05:24] Writing at 0x00010000... (3 %)
+[17:05:24] Writing at 0x0001be96... (6 %)
+[17:05:25] Writing at 0x0002650f... (9 %)
+[17:05:25] Writing at 0x00032755... (12 %)
+[17:05:26] Writing at 0x00037c80... (15 %)
+[17:05:26] Writing at 0x0003d3d7... (18 %)
+[17:05:26] Writing at 0x00042b9e... (21 %)
+[17:05:27] Writing at 0x000481c5... (24 %)
+[17:05:27] Writing at 0x0004d3ac... (27 %)
+[17:05:28] Writing at 0x0005257a... (30 %)
+[17:05:28] Writing at 0x000577c7... (33 %)
+[17:05:28] Writing at 0x0005cb68... (36 %)
+[17:05:29] Writing at 0x00061e52... (39 %)
+[17:05:29] Writing at 0x00067291... (42 %)
+[17:05:30] Writing at 0x0006c1a0... (45 %)
+[17:05:30] Writing at 0x0007152c... (48 %)
+[17:05:30] Writing at 0x000768d5... (51 %)
+[17:05:31] Writing at 0x0007c502... (54 %)
+[17:05:31] Writing at 0x00081b49... (57 %)
+[17:05:32] Writing at 0x00086e77... (60 %)
+[17:05:32] Writing at 0x0008c27c... (63 %)
+[17:05:32] Writing at 0x00091695... (66 %)
+[17:05:33] Writing at 0x00096cef... (69 %)
+[17:05:33] Writing at 0x0009c5c9... (72 %)
+[17:05:34] Writing at 0x000a2376... (75 %)
+[17:05:34] Writing at 0x000a7ce1... (78 %)
+[17:05:34] Writing at 0x000ae239... (81 %)
+[17:05:35] Writing at 0x000b8499... (84 %)
+[17:05:35] Writing at 0x000bdeb1... (87 %)
+[17:05:36] Writing at 0x000c34e2... (90 %)
+[17:05:36] Writing at 0x000ca69d... (93 %)
+[17:05:36] Writing at 0x000cfeb1... (96 %)
+[17:05:37] Writing at 0x000d55da... (100 %)
+[17:05:38] Wrote 822704 bytes (534170 compressed) at 0x00010000 in 13.1 seconds (effective 502.3 kbit/s)...
+[17:05:38] Hash of data verified.
+[17:05:38] 
+[17:05:38] Leaving...
+[17:05:38] Hard resetting via RTS pin...
+[17:05:39] ========================= [SUCCESS] Took 30.49 seconds =========================
+[17:05:39] 
+[17:05:39] Environment    Status    Duration
+[17:05:39] -------------  --------  ------------
+[17:05:39] gru            SUCCESS   00:00:30.489
+[17:05:39] ========================= 1 succeeded in 00:00:30.489 =========================
+[17:05:46] /home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py:102: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+[17:05:46]   self._client = mqtt.Client(client_id="fedkd-server", clean_session=True)
+[17:05:49] =======================================================
+[17:05:49]   FedKD-MR — Servidor de Federação MQTT
+[17:05:49] =======================================================
+[17:05:49]   Broker     : 192.168.0.14:1883
+[17:05:49]   Clientes   : 3
+[17:05:49]   Rounds     : 2
+[17:05:49]   Timeout    : 600s
+[17:05:49]   Temperatura: 2.0
+[17:05:49]   N_CLASSES  : 4
+[17:05:49] =======================================================
+[17:05:49]   Tópicos:
+[17:05:49]     Recebe logits : fedkd/logits/push/<client>
+[17:05:49]     Publica cmds  : fedkd/cmd/pull
+[17:05:49]     Publica teacher: fedkd/teacher/pull
+[17:05:49] =======================================================
+[17:05:49] [SERVER] Conectado ao broker 192.168.0.14:1883
+[17:05:49] 
+[17:05:49] ==================================================
+[17:05:49] [SERVER] === Round 1 ===
+[17:05:49] ==================================================
+[17:05:49] [SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[17:06:18] [SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (prob_range=[0.000, 1.000])
+[17:06:44] [SERVER] Aguardando logits: 1/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  546s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (prob_range=[0.003, 0.971])
+[17:08:05] [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  520s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  520s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  519s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  519s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  518s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  518s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  517s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  517s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  516s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  516s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  515s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  515s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  514s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  514s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  513s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  513s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  512s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  512s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  511s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  511s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  510s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  510s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  509s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  509s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  508s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  508s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  507s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  507s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  506s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  506s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  505s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  505s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  504s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  504s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  503s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  503s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  502s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  502s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  501s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  501s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  500s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  500s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  499s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  499s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  498s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  498s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  497s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  497s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  496s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  496s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  495s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  495s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  494s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (prob_range=[0.000, 0.978])
+[17:08:05] 
+[17:08:05] [SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[17:08:05] [SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0)
+[17:08:05]   amostra 0: [0.3663  0.3196  0.1540  0.1602]
+[17:08:05]   amostra 1: [0.3348  0.3113  0.1411  0.2128]
+[17:08:05]   amostra 2: [0.3738  0.3339  0.1653  0.1270]
+[17:08:05]   amostra 3: [0.2844  0.3343  0.1500  0.2313]
+[17:08:05]   amostra 4: [0.3612  0.3132  0.1411  0.1845]
+[17:08:05]   amostra 5: [0.2240  0.3553  0.1489  0.2719]
+[17:08:05]   amostra 6: [0.0450  0.3359  0.2981  0.3211]
+[17:08:05]   amostra 7: [0.2303  0.3576  0.1563  0.2558]
+[17:08:05]   amostra 8: [0.1899  0.3718  0.1570  0.2813]
+[17:08:05]   amostra 9: [0.0479  0.3382  0.2964  0.3176]
+[17:08:05]   amostra 10: [0.0200  0.3311  0.3193  0.3295]
+[17:08:05]   amostra 11: [0.0207  0.3315  0.3188  0.3291]
+[17:08:05]   amostra 12: [0.0197  0.3334  0.3156  0.3314]
+[17:08:05]   amostra 13: [0.0305  0.3286  0.3096  0.3313]
+[17:08:05]   amostra 14: [0.0203  0.3315  0.3187  0.3294]
+[17:08:05]   amostra 15: [0.0264  0.3309  0.3066  0.3361]
+[17:08:05]   amostra 16: [0.0319  0.3405  0.2995  0.3281]
+[17:08:05]   amostra 17: [0.0187  0.3303  0.3199  0.3312]
+[17:08:05]   amostra 18: [0.0819  0.3405  0.2284  0.3492]
+[17:08:05]   amostra 19: [0.0235  0.3287  0.3178  0.3300]
+[17:08:05] [SERVER] teacher_probs publicado → fedkd/teacher/pull  (320 bytes)
+[17:08:05] [SERVER] Calculando métricas de consenso…
+[17:08:05]   KL(FedKD-ESP32-1||teacher) = 1.0918  (max=1.1655)
+[17:08:05]   KL(FedKD-ESP32-2||teacher) = 0.6055  (max=0.9548)
+[17:08:05]   KL(FedKD-ESP32-3||teacher) = 0.6229  (max=0.8966)
+[17:08:05]   cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.0657
+[17:08:05]   cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.1326
+[17:08:05]   cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.3654
+[17:08:05] [SERVER] Done de FedKD-ESP32-1:  acc_local=0.228  acc_kd=0.228  (Δ=+0.000)  acc_ft=0.228  (Δ=+0.000)
+[17:08:05] [SERVER] Done de FedKD-ESP32-2:  acc_local=0.395  acc_kd=0.423  (Δ=+0.028)  acc_ft=0.420  (Δ=+0.026)
+[17:08:05] [SERVER] Done de FedKD-ESP32-3:  acc_local=0.553  acc_kd=0.582  (Δ=+0.028)  acc_ft=0.585  (Δ=+0.032)
+[17:08:05] [SERVER] Todos os clientes confirmaram 'done'.
+[17:08:05] [LOG] Round 1 salvo → metrics.csv, consensus.csv, logits/*.npy
+[17:08:05] 
+[17:08:05] ==================================================
+[17:08:05] [SERVER] === Round 2 ===
+[17:08:05] ==================================================
+[17:08:05] [SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[17:08:07] [SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (prob_range=[0.000, 1.000])
+[17:08:08] [SERVER] Aguardando logits: 1/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  597s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (prob_range=[0.011, 0.892])
+[17:08:38] [SERVER] Aguardando logits: 2/3 clientes  |  597s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (prob_range=[0.000, 0.978])
+[17:08:38] 
+[17:08:38] [SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[17:08:38] [SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0)
+[17:08:38]   amostra 0: [0.3925  0.3270  0.1499  0.1305]
+[17:08:38]   amostra 1: [0.3772  0.3219  0.1439  0.1570]
+[17:08:38]   amostra 2: [0.3854  0.3383  0.1616  0.1147]
+[17:08:38]   amostra 3: [0.3087  0.3466  0.1731  0.1717]
+[17:08:38]   amostra 4: [0.4016  0.3252  0.1367  0.1365]
+[17:08:38]   amostra 5: [0.2493  0.3699  0.1755  0.2052]
+[17:08:38]   amostra 6: [0.0912  0.3575  0.2677  0.2836]
+[17:08:38]   amostra 7: [0.2558  0.3748  0.1814  0.1880]
+[17:08:38]   amostra 8: [0.2212  0.3891  0.1806  0.2091]
+[17:08:38]   amostra 9: [0.0930  0.3638  0.2643  0.2789]
+[17:08:38]   amostra 10: [0.0462  0.3348  0.2997  0.3194]
+[17:08:38]   amostra 11: [0.0488  0.3368  0.2985  0.3159]
+[17:08:38]   amostra 12: [0.0482  0.3447  0.2884  0.3187]
+[17:08:38]   amostra 13: [0.0622  0.3295  0.2835  0.3248]
+[17:08:38]   amostra 14: [0.0485  0.3367  0.2981  0.3167]
+[17:08:38]   amostra 15: [0.0551  0.3360  0.2735  0.3354]
+[17:08:38]   amostra 16: [0.0721  0.3714  0.2624  0.2940]
+[17:08:38]   amostra 17: [0.0419  0.3306  0.3008  0.3266]
+[17:08:38]   amostra 18: [0.1285  0.3520  0.2011  0.3184]
+[17:08:38]   amostra 19: [0.0493  0.3272  0.2994  0.3241]
+[17:08:38] [SERVER] teacher_probs publicado → fedkd/teacher/pull  (320 bytes)
+[17:08:38] [SERVER] Calculando métricas de consenso…
+[17:08:38]   KL(FedKD-ESP32-1||teacher) = 1.0601  (max=1.1318)
+[17:08:38]   KL(FedKD-ESP32-2||teacher) = 0.3637  (max=0.7041)
+[17:08:38]   KL(FedKD-ESP32-3||teacher) = 0.4434  (max=0.8426)
+[17:08:38]   cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.1488
+[17:08:38]   cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.2132
+[17:08:38]   cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.6096
+[17:08:38] [SERVER] Done de FedKD-ESP32-1:  acc_local=0.228  acc_kd=0.228  (Δ=+0.000)  acc_ft=0.228  (Δ=+0.000)
+[17:08:38] [SERVER] Done de FedKD-ESP32-2:  acc_local=0.420  acc_kd=0.451  (Δ=+0.031)  acc_ft=0.426  (Δ=+0.005)
+[17:08:38] [SERVER] Done de FedKD-ESP32-3:  acc_local=0.585  acc_kd=0.720  (Δ=+0.135)  acc_ft=0.592  (Δ=+0.007)
+[17:08:38] [SERVER] Todos os clientes confirmaram 'done'.
+[17:08:38] [LOG] Round 2 salvo → metrics.csv, consensus.csv, logits/*.npy
+[17:08:38] [SERVER] Desconectado do broker.
+[17:08:38] 
+[17:08:38]   [+02:05] ✓     UPLOAD_OK 12284 bytes ✓
+[17:08:38]   [+02:05] ✓     → transfer_log: metadata.json 12284B 4733ms [ok]
+[17:08:38]   [+02:05] ✓     → UPLOAD /teacher_probs.bin (320 bytes)
+[17:08:38] 
+[17:08:38]   [+02:06] ✓     UPLOAD_OK 320 bytes ✓
+[17:08:38]   [+02:06] ✓     → transfer_log: teacher_probs.bin 320B 250ms [ok]
+[17:08:38]   [+02:06] ✓     → UPLOAD /teacher_probs_meta.json (102 bytes)
+[17:08:38] 
+[17:08:38]   [+02:06] ✓     UPLOAD_OK 102 bytes ✓
+[17:08:38]   [+02:06] ✓     → transfer_log: teacher_probs_meta.json 102B 187ms [ok]
+[17:08:38]   [+02:07] ✓ Fase 3 concluída.
+[17:08:38] 
+[17:08:38] ============================================================
+[17:08:38]   Fase 4 — Gravar firmware de federação
+[17:08:38] ============================================================
+[17:08:38]   [+02:07] ✓ Gravando 'mlp' em esp32_c1 (/dev/ttyUSB0)...
+[17:08:38]   [+02:07] ✓   $ pio run -e mlp -t upload --upload-port=/dev/ttyUSB0
+[17:08:38]   [+02:39] ✓   Firmware 'mlp' gravado com sucesso em /dev/ttyUSB0
+[17:08:38]   [+02:41] ✓ Gravando 'cnn1d' em esp32_c2 (/dev/ttyUSB1)...
+[17:08:38]   [+02:41] ✓   $ pio run -e cnn1d -t upload --upload-port=/dev/ttyUSB1
+[17:08:38]   [+03:13] ✓   Firmware 'cnn1d' gravado com sucesso em /dev/ttyUSB1
+[17:08:38]   [+03:15] ✓ Gravando 'gru' em esp32_c3 (/dev/ttyUSB2)...
+[17:08:38]   [+03:15] ✓   $ pio run -e gru -t upload --upload-port=/dev/ttyUSB2
+[17:08:38]   [+03:46] ✓   Firmware 'gru' gravado com sucesso em /dev/ttyUSB2
+[17:08:38]   [+03:48] ✓ Fase 4 concluída.
+[17:08:38] 
+[17:08:38] ============================================================
+[17:08:38]   Fase 5 — Iniciar fedkd_server.py
+[17:08:38] ============================================================
+[17:08:38]   [+03:48] ✓ Aguardando ESP32s inicializarem (5s)...
+[17:08:38]   [+03:53] ✓   Iniciando: /usr/bin/python3 /home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py --host 192.168.0.14 --port 1883 --n-clients 3 --timeout 600 --temperature 2.0 --interval 5.0 --rounds 2
+[17:08:38]   [+03:53] ✓   fedkd_server.py PID=57892
+[17:08:38]   [+03:53] ✓ Servidor iniciado. Ctrl+C para encerrar.
+[17:08:38] 
+[17:08:38] ============================================================
+[17:08:38]   Orquestrador concluído
+[17:08:38] ============================================================

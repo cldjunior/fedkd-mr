@@ -61,6 +61,7 @@ public:
 
     // ── Saída final ───────────────────────────────────────────────────────────
     float probs[GRU_CLS];
+    float logits[GRU_CLS];
 
     // ── Learning rates e MSE ─────────────────────────────────────────────────
     float lr_w = 0.003f;
@@ -138,90 +139,96 @@ public:
         for (int o = 0; o < GRU_CLS; o++) {
             float s = bd[o];
             for (int j = 0; j < GRU_H; j++) s += Wd[o][j] * h[j];
+            logits[o] = s;
             probs[o] = s;
         }
         softmax(probs, GRU_CLS);
         return probs;
     }
 
+    bool getLogits(float out[N_CLASSES]) const override {
+        for (int k = 0; k < N_CLASSES; ++k) out[k] = logits[k];
+        return true;
+    }
+
     void backProp(const float* y_target) override {
-        float dLogits[GRU_CLS];
-        float sq_err = 0.f;
-        for (int k = 0; k < GRU_CLS; k++) {
-            float diff = probs[k] - y_target[k];
-            dLogits[k] = diff;
-            sq_err += diff * diff;
+        float grad[GRU_CLS]; float sq_err=0.f;
+        for (int k=0;k<GRU_CLS;++k) {
+            grad[k]=probs[k]-y_target[k];
+            sq_err+=grad[k]*grad[k];
         }
-        sum_sq_err += sq_err;
+        sum_sq_err+=sq_err;
+        applyLogitsGradient(grad);
+    }
 
-        const float* hT = h_t[GRU_T - 1];
+    float backPropKD(const float* q, float temperature) override {
+        float grad[GRU_CLS], loss=0.f;
+        if(!KDMath::lossGradient(logits,q,GRU_CLS,temperature,grad,loss)) return NAN;
+        applyLogitsGradient(grad);
+        return loss;
+    }
 
-        float dH[GRU_H] = {};
-        for (int o = 0; o < GRU_CLS; o++) {
-            bd[o] -= lr_b * dLogits[o];
-            for (int j = 0; j < GRU_H; j++) {
-                dH[j] += Wd[o][j] * dLogits[o];
-                Wd[o][j] -= lr_w * dLogits[o] * hT[j];
+    // Storage for reverse-mode gate sensitivities (8 steps × 64 units).
+    float kd_dZ[GRU_T][GRU_H], kd_dR[GRU_T][GRU_H], kd_dHc[GRU_T][GRU_H];
+
+    void applyLogitsGradient(const float* dLogits) {
+        const float* hT=h_t[GRU_T-1];
+        float dH_next[GRU_H]={};
+        // Read original dense weights BEFORE changing any parameters.
+        for(int o=0;o<GRU_CLS;++o)
+            for(int j=0;j<GRU_H;++j) dH_next[j]+=Wd[o][j]*dLogits[o];
+        // Pass 1: full BPTT with fixed (pre-update) recurrent parameters.
+        for(int t=GRU_T-1;t>=0;--t) {
+            const float* hp=h_prev[t];
+            float dRH[GRU_H]={};
+            for(int i=0;i<GRU_H;++i) {
+                kd_dZ[t][i]=dH_next[i]*(hp[i]-hc_t[t][i])*sigmoid_d(z_t[t][i]);
+                kd_dHc[t][i]=dH_next[i]*(1.f-z_t[t][i])*tanh_d(hc_t[t][i]);
             }
-        }
-
-        float dH_next[GRU_H];
-        for (int i = 0; i < GRU_H; i++) dH_next[i] = dH[i];
-
-        for (int t = GRU_T - 1; t >= 0; t--) {
-            const float* xt  = x_seq[t];
-            const float* hp  = h_prev[t];
-            const float* zt  = z_t[t];
-            const float* rt  = r_t[t];
-            const float* hct = hc_t[t];
-            const float* rht = r_h[t];
-            float* dH_curr   = dH_next;
-
-            float dZ[GRU_H], dHc[GRU_H];
-            for (int i = 0; i < GRU_H; i++) {
-                dZ[i]  = dH_curr[i] * (hp[i] - hct[i]) * sigmoid_d(zt[i]);
-                dHc[i] = dH_curr[i] * (1.f - zt[i]) * tanh_d(hct[i]);
-            }
-
-            for (int i = 0; i < GRU_H; i++) {
-                bz[i] -= lr_b * dZ[i];
-                bh[i] -= lr_b * dHc[i];
-            }
-
-            float dRH[GRU_H] = {};
-            for (int i = 0; i < GRU_H; i++) {
-                for (int j = 0; j < GRU_IN; j++) {
-                    Wz[i][j] -= lr_w * dZ[i]  * xt[j];
-                    Wh[i][j] -= lr_w * dHc[i] * xt[j];
-                }
-                for (int j = 0; j < GRU_H; j++) {
-                    Uz[i][j] -= lr_w * dZ[i]  * hp[j];
-                    Uh[i][j] -= lr_w * dHc[i] * rht[j];
-                    dRH[j]   += dHc[i] * Uh[i][j];
+            for(int i=0;i<GRU_H;++i)
+                for(int j=0;j<GRU_H;++j)
+                    dRH[j]+=Uh[i][j]*kd_dHc[t][i];
+            for(int i=0;i<GRU_H;++i)
+                kd_dR[t][i]=dRH[i]*hp[i]*sigmoid_d(r_t[t][i]);
+            float dH_prev[GRU_H]={};
+            for(int j=0;j<GRU_H;++j) {
+                dH_prev[j]=dH_next[j]*z_t[t][j]+dRH[j]*r_t[t][j];
+                for(int i=0;i<GRU_H;++i) {
+                    dH_prev[j]+=Uz[i][j]*kd_dZ[t][i];
+                    dH_prev[j]+=Ur[i][j]*kd_dR[t][i];
                 }
             }
-
-            float dR[GRU_H];
-            for (int i = 0; i < GRU_H; i++)
-                dR[i] = dRH[i] * hp[i] * sigmoid_d(rt[i]);
-
-            for (int i = 0; i < GRU_H; i++) {
-                br[i] -= lr_b * dR[i];
-                for (int j = 0; j < GRU_IN; j++)
-                    Wr[i][j] -= lr_w * dR[i] * xt[j];
-                for (int j = 0; j < GRU_H; j++)
-                    Ur[i][j] -= lr_w * dR[i] * hp[j];
+            for(int j=0;j<GRU_H;++j) dH_next[j]=dH_prev[j];
+        }
+        // Pass 2: apply accumulated gate gradients, without reading updated weights.
+        for(int o=0;o<GRU_CLS;++o) {
+            bd[o]-=lr_b*dLogits[o];
+            for(int j=0;j<GRU_H;++j) Wd[o][j]-=lr_w*dLogits[o]*hT[j];
+        }
+        for(int i=0;i<GRU_H;++i) {
+            float dzsum=0.f, drsum=0.f, dhcsum=0.f;
+            for(int t=0;t<GRU_T;++t) {
+                dzsum+=kd_dZ[t][i]; drsum+=kd_dR[t][i]; dhcsum+=kd_dHc[t][i];
             }
-
-            float dH_prev[GRU_H] = {};
-            for (int i = 0; i < GRU_H; i++) {
-                dH_prev[i] += dH_curr[i] * zt[i];
-                for (int j = 0; j < GRU_H; j++) dH_prev[i] += dZ[j]  * Uz[j][i];
-                for (int j = 0; j < GRU_H; j++) dH_prev[i] += dR[j]  * Ur[j][i];
-                dH_prev[i] += dRH[i] * rt[i];
+            bz[i]-=lr_b*dzsum; br[i]-=lr_b*drsum; bh[i]-=lr_b*dhcsum;
+            for(int j=0;j<GRU_IN;++j) {
+                float wz=0.f,wr=0.f,wh=0.f;
+                for(int t=0;t<GRU_T;++t) {
+                    wz+=kd_dZ[t][i]*x_seq[t][j];
+                    wr+=kd_dR[t][i]*x_seq[t][j];
+                    wh+=kd_dHc[t][i]*x_seq[t][j];
+                }
+                Wz[i][j]-=lr_w*wz; Wr[i][j]-=lr_w*wr; Wh[i][j]-=lr_w*wh;
             }
-
-            for (int i = 0; i < GRU_H; i++) dH_next[i] = dH_prev[i];
+            for(int j=0;j<GRU_H;++j) {
+                float uz=0.f,ur=0.f,uh=0.f;
+                for(int t=0;t<GRU_T;++t) {
+                    uz+=kd_dZ[t][i]*h_prev[t][j];
+                    ur+=kd_dR[t][i]*h_prev[t][j];
+                    uh+=kd_dHc[t][i]*r_h[t][j];
+                }
+                Uz[i][j]-=lr_w*uz; Ur[i][j]-=lr_w*ur; Uh[i][j]-=lr_w*uh;
+            }
         }
     }
 

@@ -50,6 +50,7 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+from fedkd_wire import pack as pack_wire, unpack as unpack_wire
 
 try:
     import paho.mqtt.client as mqtt
@@ -62,6 +63,8 @@ except ImportError:
 N_CLASSES    = 4
 TEMPERATURE  = 2.0          # temperatura para suavização dos soft targets
 
+TOPIC_IDENTITY = "fedkd/identity/+"
+EXPECTED_ARCH = {"FedKD-ESP32-1":"MLP", "FedKD-ESP32-2":"CNN1D", "FedKD-ESP32-3":"GRU"}
 TOPIC_LOGITS  = "fedkd/logits/push/+"     # wildcard — recebe de qualquer cliente
 TOPIC_TEACHER = "fedkd/teacher/pull"      # publica teacher_probs para todos
 TOPIC_CMD_OUT = "fedkd/cmd/pull"          # publica comandos para todos
@@ -71,18 +74,30 @@ TOPIC_CMD_IN  = "fedkd/cmd/push/+"        # recebe status de clientes
 
 class FedKDServer:
     def __init__(self, host: str, port: int, n_clients: int,
-                 timeout_s: int, temperature: float, log_dir: str = "logs"):
+                 timeout_s: int, temperature: float, log_dir: str = "logs",
+                 client_weights: dict = None, sharpening: float = 0.7):
         self.host        = host
         self.port        = port
         self.n_clients   = n_clients
         self.timeout_s   = timeout_s
+        if not np.isfinite(temperature) or temperature <= 0: raise ValueError("temperature deve ser > 0")
+        if not np.isfinite(sharpening) or sharpening <= 0: raise ValueError("sharpening deve ser > 0")
+        if not client_weights: raise ValueError("Pesos n_i dos clientes sao obrigatorios")
         self.temperature = temperature
+        self.sharpening = sharpening
+        self.client_weights = dict(client_weights)
+        if any(not isinstance(n,int) or isinstance(n,bool) or n<=0 for n in self.client_weights.values()):
+            raise ValueError("Todos os pesos n_i devem ser inteiros positivos")
 
         self._logits: dict[str, np.ndarray] = {}  # {client_name: (n_pub, N_CLASSES)}
         self._done:   dict[str, bool]        = {}  # {client_name: done_flag}
+        self._identity: dict[str, dict] = {}
+        self._round_open=False
+        self._teacher_published=False
         self._metrics: dict[str, dict]       = {}  # {client_name: parsed done JSON}
         self._lock = threading.Lock()
         self.round_n = 0
+        self.experiment_id = None
 
         # ── Diretório de logs ────────────────────────────────────────────────
         self.log_dir    = Path(log_dir)
@@ -134,6 +149,7 @@ class FedKDServer:
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"[SERVER] Conectado ao broker {self.host}:{self.port}")
+            client.subscribe(TOPIC_IDENTITY)
             client.subscribe(TOPIC_LOGITS)
             client.subscribe(TOPIC_CMD_IN)
         else:
@@ -147,80 +163,113 @@ class FedKDServer:
         topic   = msg.topic
         payload = msg.payload
 
-        if topic.startswith("fedkd/logits/push/"):
-            client_name = topic.split("/")[-1]
-            n_bytes = len(payload)
-            if n_bytes == 0 or n_bytes % (N_CLASSES * 4) != 0:
-                print(f"[WARN] {client_name}: payload inválido ({n_bytes} bytes). Ignorando.")
-                return
-            n_pub  = n_bytes // (N_CLASSES * 4)
-            logits = np.frombuffer(payload, dtype=np.float32).reshape(n_pub, N_CLASSES).copy()
+        if topic.startswith("fedkd/identity/"):
+            client_name=topic.rsplit("/",1)[-1]
+            try:
+                info=json.loads(payload)
+            except (ValueError,UnicodeError):
+                print(f"[IDENTIDADE] JSON invalido {client_name}");return
+            if not isinstance(info,dict) or client_name not in self.client_weights:
+                print(f"[IDENTIDADE] cliente desconhecido: {client_name}");return
+            if info.get("client_id") != client_name or info.get("model_arch") != EXPECTED_ARCH.get(client_name):
+                print(f"[IDENTIDADE] arquitetura/cliente incoerente: {client_name} {info.get('model_arch')}");return
+            chip=info.get("device_id")
+            if not isinstance(chip,str) or len(chip)!=12 or any(c not in '0123456789ABCDEFabcdef' for c in chip):
+                print(f"[IDENTIDADE] chip invalido: {client_name}");return
+            if (info.get('round')!=self.round_n or info.get('experiment_id')!=self.experiment_id):
+                return  # boot anterior ou round diferente, nao e identidade da rodada ativa
             with self._lock:
-                self._logits[client_name] = logits
+                if not self._round_open:return
+                if any(other!=client_name and old.get('device_id')==chip for other,old in self._identity.items()):
+                    print(f"[IDENTIDADE] chip duplicado: {chip}");return
+                self._identity[client_name]=info
+            print(f"[IDENTIDADE] {client_name}={info['model_arch']} chip={chip} fw={info.get('firmware_version')}")
+
+        elif topic.startswith("fedkd/logits/push/"):
+            client_name = topic.split("/")[-1]
+            if client_name not in self.client_weights:
+                print(f"[WARN] Cliente desconhecido: {client_name}. Ignorando.");return
+            with self._lock:
+                if not self._round_open or client_name not in self._identity:
+                    print(f"[WARN] {client_name}: sem identidade valida nesta rodada.");return
+            try:
+                raw=unpack_wire(payload,self.round_n,self.experiment_id)
+            except ValueError as exc:
+                print(f"[WIRE] Rejeitando logits de {client_name}: {exc}");return
+            n_bytes=len(raw)
+            if n_bytes==0 or n_bytes%(N_CLASSES*4):
+                print(f"[WARN] {client_name}: payload invalido ({n_bytes} bytes)");return
+            n_pub=n_bytes//(N_CLASSES*4)
+            logits=np.frombuffer(raw,dtype='<f4').reshape(n_pub,N_CLASSES).copy()
+            if not np.isfinite(logits).all():
+                print(f"[WARN] {client_name}: NaN/Inf");return
+            with self._lock:
+                if not self._round_open:return
+                if client_name in self._logits:
+                    print(f"[WIRE] Logits duplicados de {client_name}; ignorados");return
+                if self._logits and logits.shape!=next(iter(self._logits.values())).shape:
+                    print(f"[WARN] {client_name}: D_pub divergente");return
+                self._logits[client_name]=logits
             print(f"[SERVER] Logits de {client_name}: {n_pub} amostras × {N_CLASSES} classes"
-                  f"  (prob_range=[{logits.min():.3f}, {logits.max():.3f}])")
+                  f"  (logit_range=[{logits.min():.3f}, {logits.max():.3f}])")
 
         elif topic.startswith("fedkd/cmd/push/"):
             client_name = topic.split("/")[-1]
+            if client_name not in self.client_weights:return
             try:
-                info   = json.loads(payload)
-                status = info.get("status", "?")
-                if status == "done":
+                info=json.loads(payload)
+                if not isinstance(info,dict):return
+                status=info.get('status')
+                if status=='done':
+                    if info.get('experiment_id')!=self.experiment_id or info.get('round')!=self.round_n:
+                        print(f"[WIRE] done antigo/invalido de {client_name}");return
                     with self._lock:
-                        self._done[client_name]   = True
-                        self._metrics[client_name] = info
-                    acc_l = info.get("acc_local", float("nan"))
-                    acc_k = info.get("acc_kd",    float("nan"))
-                    acc_f = info.get("acc_ft",    float("nan"))
-                    print(f"[SERVER] Done de {client_name}:"
-                          f"  acc_local={acc_l:.3f}"
-                          f"  acc_kd={acc_k:.3f}  (Δ={acc_k-acc_l:+.3f})"
-                          f"  acc_ft={acc_f:.3f}  (Δ={acc_f-acc_l:+.3f})")
+                        if not self._round_open or not self._teacher_published or client_name not in self._logits or client_name not in self._identity:
+                            print(f"[WIRE] done sem logits/identidade de {client_name}");return
+                        if client_name in self._done:return
+                        self._done[client_name]=True
+                        self._metrics[client_name]=info
+                    al=float(info.get('acc_local',float('nan')))
+                    ak=float(info.get('acc_kd',float('nan')))
+                    af=float(info.get('acc_ft',float('nan')))
+                    print(f"[SERVER] Done de {client_name}: acc_local={al:.3f} acc_kd={ak:.3f} acc_ft={af:.3f}")
                 else:
                     print(f"[SERVER] Status de {client_name}: {status}")
-            except Exception:
-                pass  # payload não-JSON — ignora
+            except (ValueError,TypeError,UnicodeError) as exc:
+                print(f"[WARN] done malformado de {client_name}: {exc}")
 
     # ── Agregação ────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _softmax_logits(x: np.ndarray) -> np.ndarray:
+        y = np.asarray(x, dtype=np.float64)
+        y = y - y.max(axis=1, keepdims=True)
+        e = np.exp(y)
+        return e / e.sum(axis=1, keepdims=True)
+
     def _aggregate(self) -> np.ndarray:
-        """
-        Agrega probabilidades dos clientes com temperature scaling.
-
-        Passos:
-          1. Média simples das probabilidades de todos os clientes
-          2. Converte para logits aproximados: log(p + ε)
-          3. Aplica temperatura T: logits_t = logits / T
-          4. Softmax estabilizado → teacher_probs
-
-        A temperatura T > 1 suaviza a distribuição (dark knowledge).
-        T = 2.0 é um valor clássico em KD (Hinton et al., 2015).
+        """Lbar = sum_i n_i L_i / sum_i n_i; P=softmax(Lbar/T);
+        Q=normalize(P**(1/tau_s)) = softmax(Lbar/(T*tau_s)).
+        tau_s < 1 afia o consenso. Nao usa medias historicas.
         """
         with self._lock:
-            probs_list = [v.copy() for v in self._logits.values()]
-            n_clients_received = len(probs_list)
-
-        if n_clients_received == 0:
+            values = {k:v.copy() for k,v in self._logits.items()}
+        if not values:
             return None
-
-        # Média das probabilidades entre clientes
-        avg_probs = np.mean(probs_list, axis=0)  # (n_pub, N_CLASSES)
-
-        # Normaliza para garantir soma = 1 (robustez numérica)
-        row_sums = avg_probs.sum(axis=1, keepdims=True).clip(min=1e-7)
-        avg_probs = avg_probs / row_sums
-
-        # Converte para logits aproximados e aplica temperatura
-        eps         = 1e-7
-        logits_approx = np.log(avg_probs + eps)          # (n_pub, N_CLASSES)
-        logits_t      = logits_approx / self.temperature  # escala por T
-
-        # Softmax estabilizado (subtrai max por linha para evitar overflow)
-        logits_t -= logits_t.max(axis=1, keepdims=True)
-        exp_l        = np.exp(logits_t)
-        teacher_probs = exp_l / exp_l.sum(axis=1, keepdims=True)
-
-        return teacher_probs.astype(np.float32)
+        names = sorted(values)
+        shape = values[names[0]].shape
+        if any(values[n].shape != shape for n in names):
+            raise ValueError("Logits de clientes com formas inconsistentes")
+        weights = np.asarray([self.client_weights[n] for n in names], dtype=np.float64)
+        weights = weights / weights.sum()
+        stack = np.stack([values[n].astype(np.float64) for n in names], axis=0)
+        consensus_logits = np.tensordot(weights, stack, axes=(0,0))
+        prob_T = self._softmax_logits(consensus_logits / self.temperature)
+        teacher = self._softmax_logits(np.log(np.clip(prob_T,1e-300,1.0)) / self.sharpening)
+        if not np.isfinite(teacher).all():
+            raise ValueError("Consenso nao-finito")
+        self._last_weight_summary = {n:int(self.client_weights[n]) for n in names}
+        return teacher.astype(np.float32)
 
     # ── Métricas de consenso (calculadas no servidor com numpy) ─────────────
 
@@ -263,9 +312,10 @@ class FedKDServer:
 
         # KL de cada cliente em relação ao teacher
         kl_vals = []
-        for name, probs in client_logits.items():
-            n = min(len(probs), len(teacher_probs))
-            kl = self._kl_div(probs[:n], teacher_probs[:n])
+        for name, logits in client_logits.items():
+            n = min(len(logits), len(teacher_probs))
+            probs_T = self._softmax_logits(logits[:n] / self.temperature)
+            kl = self._kl_div(probs_T, teacher_probs[:n])
             kl_vals.append(kl.mean())
             print(f"  KL({name}||teacher) = {kl.mean():.4f}  (max={kl.max():.4f})")
         if kl_vals:
@@ -275,6 +325,8 @@ class FedKDServer:
             stats["kl_mean"] = stats["kl_max"] = float("nan")
 
         # Cosine similarity entre pares de clientes
+        # Similaridade em espaco de probabilidades (logits possuem deslocamento arbitrario).
+        client_logits = {k: self._softmax_logits(v / self.temperature) for k,v in client_logits.items()}
         names  = list(client_logits.keys())
         cos_vals = []
         for i in range(len(names)):
@@ -370,11 +422,15 @@ class FedKDServer:
             self._logits.clear()
             self._done.clear()
             self._metrics.clear()
+            self._identity.clear()
+            self._round_open=True
+            self._teacher_published=False
 
         time.sleep(start_delay_s)
 
         # Envia comando de início
-        cmd = json.dumps({"cmd": "start", "round": self.round_n}).encode()
+        cmd = json.dumps({"cmd": "start", "round": self.round_n,
+                          "experiment_id": self.experiment_id}).encode()
         self._client.publish(TOPIC_CMD_OUT, cmd)
         print(f"[SERVER] Comando 'start' enviado → {TOPIC_CMD_OUT}")
 
@@ -401,7 +457,8 @@ class FedKDServer:
             return False
 
         if n_recv < self.n_clients:
-            print(f"[SERVER] Agregando com {n_recv}/{self.n_clients} clientes: {clients}")
+            print(f"[SERVER] Faltam {self.n_clients-n_recv} clientes; abortando rodada sem agregar.")
+            return False
         else:
             print(f"[SERVER] Todos os {n_recv} clientes responderam: {clients}")
 
@@ -413,13 +470,17 @@ class FedKDServer:
 
         n_pub = teacher_probs.shape[0]
         print(f"[SERVER] teacher_probs calculado: {n_pub} amostras × {N_CLASSES} classes"
-              f"  (T={self.temperature})")
+              f"  (T={self.temperature}, tau_s={self.sharpening}, n_i={self._last_weight_summary})")
         for i in range(n_pub):
             probs_str = "  ".join(f"{p:.4f}" for p in teacher_probs[i])
             print(f"  amostra {i}: [{probs_str}]")
 
-        payload = teacher_probs.tobytes()
-        self._client.publish(TOPIC_TEACHER, payload)
+        payload = pack_wire(teacher_probs.tobytes(),self.round_n,self.experiment_id)
+        info = self._client.publish(TOPIC_TEACHER, payload)
+        if info.rc != 0:
+            print(f"[WIRE] falha ao publicar teacher rc={info.rc}");return False
+        with self._lock:
+            self._teacher_published=True
         print(f"[SERVER] teacher_probs publicado → {TOPIC_TEACHER}  ({len(payload)} bytes)")
 
         # ── Métricas de consenso (calculadas agora — logits ainda disponíveis) ─
@@ -463,7 +524,9 @@ class FedKDServer:
 
                 if ok:
                     # Aguarda todos confirmarem 'done' (métricas de cliente chegam aqui)
-                    self._wait_all_done(timeout_s=self.timeout_s * 2)
+                    if not self._wait_all_done(timeout_s=self.timeout_s * 2):
+                        print("[SERVER] Abortando sessao: nem todos os clientes confirmaram done.")
+                        break
                     # Salva métricas agora que _metrics está preenchido
                     if self._last_teacher_probs is not None:
                         t_total_ms = int((time.time() - self._last_t_round_start) * 1000)
@@ -474,6 +537,12 @@ class FedKDServer:
                             t_total_ms,
                         )
 
+                with self._lock:
+                    self._round_open=False
+                    self._teacher_published=False
+                if not ok:
+                    print("[SERVER] Abortando sessao por rodada incompleta.")
+                    break
                 if n_rounds is None:
                     print(f"[SERVER] Round {self.round_n} concluído. "
                           f"Próximo em {inter_round_s:.0f}s... (Ctrl+C para parar)")
@@ -497,10 +566,18 @@ def main():
                         help="Porta do broker MQTT (padrão: 1883)")
     parser.add_argument("--n-clients",  type=int, default=3,
                         help="Número de clientes ESP32 esperados (padrão: 3)")
+    parser.add_argument("--experiment-id", required=True,
+                        help="Identificador estavel do experimento (A-Z, a-z, 0-9, - e _)")
+    parser.add_argument("--start-round", type=int, default=1,
+                        help="Primeira rodada a executar (1 para novo experimento; N+1 para retomada)")
     parser.add_argument("--rounds",     type=int, default=None,
                         help="Número de rounds a executar (padrão: infinito)")
     parser.add_argument("--timeout",    type=int, default=120,
                         help="Timeout em segundos aguardando logits (padrão: 120)")
+    parser.add_argument("--client-weights-json", required=True,
+                        help='JSON {"FedKD-ESP32-1":399,...} com n_i efetivo de cada cliente')
+    parser.add_argument("--sharpening", type=float, default=0.7,
+                        help="tau_s > 0; < 1 afia o consenso (padrao 0.7)")
     parser.add_argument("--temperature", type=float, default=TEMPERATURE,
                         help=f"Temperatura de distilação (padrão: {TEMPERATURE})")
     parser.add_argument("--interval",   type=float, default=5.0,
@@ -508,7 +585,24 @@ def main():
     parser.add_argument("--manual",     action="store_true",
                         help="Aguarda ENTER entre rounds")
     args = parser.parse_args()
+    import re
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", args.experiment_id):
+        parser.error("--experiment-id deve ter de 1 a 64 caracteres alfanumericos, - ou _")
+    if args.start_round < 1:
+        parser.error("--start-round deve ser >= 1")
+    if args.rounds is not None and args.rounds < 1:
+        parser.error("--rounds deve ser >= 1")
 
+    try:
+        weights = json.loads(args.client_weights_json)
+        if not isinstance(weights, dict) or len(weights) != args.n_clients:
+            parser.error("Pesos devem conter exatamente n_clients identidades")
+        if any(not isinstance(n,int) or isinstance(n,bool) or n <= 0 for n in weights.values()):
+            parser.error("Pesos devem ser inteiros positivos")
+    except (ValueError, TypeError) as exc:
+        parser.error(f"--client-weights-json invalido: {exc}")
+    if not np.isfinite(args.sharpening) or args.sharpening<=0:
+        parser.error("--sharpening deve ser positivo")
     print("=" * 55)
     print("  FedKD-MR — Servidor de Federação MQTT")
     print("=" * 55)
@@ -531,7 +625,12 @@ def main():
         n_clients=args.n_clients,
         timeout_s=args.timeout,
         temperature=args.temperature,
+        client_weights=weights,
+        sharpening=args.sharpening,
     )
+    server.experiment_id = args.experiment_id
+    server.round_n = args.start_round - 1
+    print(f"  Experimento: {args.experiment_id} | primeira rodada: {args.start_round}")
     server.start(
         n_rounds=args.rounds,
         manual=args.manual,

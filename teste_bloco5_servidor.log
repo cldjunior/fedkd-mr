@@ -1,0 +1,139 @@
+/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py:111: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  self._client = mqtt.Client(client_id="fedkd-server", clean_session=True)
+=======================================================
+  FedKD-MR — Servidor de Federação MQTT
+=======================================================
+  Broker     : 192.168.0.14:1883
+  Clientes   : 3
+  Rounds     : 2
+  Timeout    : 600s
+  Temperatura: 2.0
+  N_CLASSES  : 4
+=======================================================
+  Tópicos:
+    Recebe logits : fedkd/logits/push/<client>
+    Publica cmds  : fedkd/cmd/pull
+    Publica teacher: fedkd/teacher/pull
+=======================================================
+  Experimento: fedkd-bloco5-test-01 | primeira rodada: 1
+[SERVER] Conectado ao broker 192.168.0.14:1883
+
+==================================================
+[SERVER] === Round 1 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  562s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-8.863, 6.617])
+[SERVER] Aguardando logits: 1/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-1.854, 3.899])
+[SERVER] Aguardando logits: 2/3 clientes  |  550s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  521s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-4.750, 4.004])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.6675  0.1103  0.1602  0.0620]
+  amostra 1: [0.5162  0.0340  0.3665  0.0833]
+  amostra 2: [0.6503  0.1746  0.0567  0.1185]
+  amostra 3: [0.3533  0.4117  0.1030  0.1320]
+  amostra 4: [0.5904  0.0287  0.3234  0.0575]
+  amostra 5: [0.3001  0.4230  0.1161  0.1608]
+  amostra 6: [0.0424  0.1031  0.0120  0.8426]
+  amostra 7: [0.2462  0.5075  0.1015  0.1449]
+  amostra 8: [0.1684  0.4153  0.1077  0.3086]
+  amostra 9: [0.0622  0.1167  0.0283  0.7928]
+  amostra 10: [0.0091  0.0158  0.0460  0.9291]
+  amostra 11: [0.0064  0.0234  0.0349  0.9354]
+  amostra 12: [0.0376  0.0739  0.1197  0.7688]
+  amostra 13: [0.0304  0.0388  0.1730  0.7578]
+  amostra 14: [0.0088  0.0170  0.0422  0.9320]
+  amostra 15: [0.0169  0.0388  0.2076  0.7367]
+  amostra 16: [0.0458  0.1491  0.0829  0.7223]
+  amostra 17: [0.0149  0.0207  0.1718  0.7926]
+  amostra 18: [0.1360  0.1304  0.2256  0.5081]
+  amostra 19: [0.0101  0.0259  0.1476  0.8164]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (320 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0777  (max=0.2764)
+  KL(FedKD-ESP32-2||teacher) = 0.2095  (max=0.6193)
+  KL(FedKD-ESP32-3||teacher) = 0.6902  (max=1.8758)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8576
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.6004
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.7234
+[SERVER] Done de FedKD-ESP32-1:  acc_local=0.637  acc_kd=0.604  (Δ=-0.033)  acc_ft=0.637  (Δ=+0.000)
+[SERVER] Done de FedKD-ESP32-2:  acc_local=0.423  acc_kd=0.423  (Δ=+0.000)  acc_ft=0.462  (Δ=+0.038)
+[SERVER] Done de FedKD-ESP32-3:  acc_local=0.702  acc_kd=0.511  (Δ=-0.191)  acc_ft=0.702  (Δ=+0.000)
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 1 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 2 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-8.401, 5.858])
+[SERVER] Aguardando logits: 1/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-1.487, 3.019])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-4.647, 3.223])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.7131  0.1042  0.1334  0.0493]
+  amostra 1: [0.6094  0.0333  0.2814  0.0759]
+  amostra 2: [0.6779  0.1754  0.0531  0.0936]
+  amostra 3: [0.3769  0.4603  0.0840  0.0788]
+  amostra 4: [0.6788  0.0272  0.2430  0.0510]
+  amostra 5: [0.3243  0.4867  0.0936  0.0953]
+  amostra 6: [0.0644  0.2025  0.0233  0.7098]
+  amostra 7: [0.2597  0.5762  0.0819  0.0822]
+  amostra 8: [0.1888  0.5334  0.1000  0.1778]
+  amostra 9: [0.0936  0.2253  0.0530  0.6281]
+  amostra 10: [0.0127  0.0266  0.0929  0.8677]
+  amostra 11: [0.0096  0.0422  0.0796  0.8687]
+  amostra 12: [0.0416  0.0970  0.2421  0.6193]
+  amostra 13: [0.0357  0.0491  0.2182  0.6970]
+  amostra 14: [0.0138  0.0322  0.0967  0.8573]
+  amostra 15: [0.0203  0.0519  0.2670  0.6608]
+  amostra 16: [0.0532  0.2125  0.1665  0.5678]
+  amostra 17: [0.0166  0.0272  0.2591  0.6972]
+  amostra 18: [0.1747  0.1625  0.2238  0.4390]
+  amostra 19: [0.0118  0.0323  0.1894  0.7666]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (320 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0451  (max=0.1228)
+  KL(FedKD-ESP32-2||teacher) = 0.2066  (max=0.5367)
+  KL(FedKD-ESP32-3||teacher) = 0.3352  (max=0.9052)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8919
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.7525
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8724
+[SERVER] Done de FedKD-ESP32-1:  acc_local=0.637  acc_kd=0.604  (Δ=-0.033)  acc_ft=0.637  (Δ=+0.000)
+[SERVER] Done de FedKD-ESP32-2:  acc_local=0.462  acc_kd=0.436  (Δ=-0.026)  acc_ft=0.436  (Δ=-0.026)
+[SERVER] Done de FedKD-ESP32-3:  acc_local=0.702  acc_kd=0.575  (Δ=-0.128)  acc_ft=0.723  (Δ=+0.021)
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 2 salvo → metrics.csv, consensus.csv, logits/*.npy
+[SERVER] Desconectado do broker.
+============================================================
+  FedKD-MR Orchestrator
+  Config: orchestrator_example.yaml
+============================================================
+  [+00:00] ✓ BLOCO5 manifest validado: D_pub=20; pesos de treino consistentes
+
+============================================================
+  FedKD-MR Orchestrator
+============================================================
+  Clientes  : 3
+  Broker    : 192.168.0.14:1883
+  ProjDir   : /home/claudio/fedkd-mr-repositorio/fedkd-mr/server
+  OutDir    : orchestrator_output
+  Fases     : [5]
+  Dry-run   : False
+  [+00:00] ✓ Fase 1 pulada — carregando backups de dataset_priv...
+  [+00:00] ✓   esp32_c1: 399 amostras do backup
+  [+00:00] ✓   esp32_c2: 390 amostras do backup
+  [+00:00] ✓   esp32_c3: 282 amostras do backup
+  [+00:00] ✓ Fase 2 pulada — usando orchestrator_output
+
+============================================================
+  Fase 5 — Iniciar fedkd_server.py
+============================================================
+  [+00:00] ✓   Iniciando: /usr/bin/python3 /home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py --host 192.168.0.14 --port 1883 --n-clients 3 --timeout 600 --temperature 2.0 --interval 5.0 --rounds 2 --experiment-id fedkd-bloco5-test-01 --start-round 1 --sharpening 0.7 --client-weights-json {"FedKD-ESP32-1":303,"FedKD-ESP32-2":301,"FedKD-ESP32-3":231}
+  [+00:00] ✓   fedkd_server.py PID=185386
+  [+00:00] ✓ Servidor iniciado. Ctrl+C para encerrar.
+
+============================================================
+  Orquestrador concluído
+============================================================
