@@ -61,6 +61,10 @@
 #define KD_TEMPERATURE 2.0f
 #endif
 
+#ifndef EXPERIMENT_SEED
+#error "EXPERIMENT_SEED deve ser definida no platformio.ini"
+#endif
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 #ifndef IDFLOAT
   #define IDFLOAT float
@@ -105,6 +109,8 @@ struct PipelineResult {
     unsigned long t_local_ms = 0;     // duração treino local
     unsigned long t_kd_ms    = 0;     // duração KD  (0 se pulado)
     unsigned long t_ft_ms    = 0;     // duração FT  (0 se pulado)
+    uint32_t hash_init = 0;
+    bool hash_init_ok = false;
     uint32_t hash_pre = 0;
     uint32_t hash_kd = 0;
     uint32_t hash_ft = 0;
@@ -778,6 +784,11 @@ static PipelineResult run_pipeline() {
     // Inicializa o modelo somente na primeira execução. Nas rodadas seguintes,
     // usa os parâmetros resultantes de KD + FT da rodada anterior.
     if (!model) {
+        // Reprodutibilidade: semente ANTES do construtor de qualquer arquitetura.
+        randomSeed((unsigned long)EXPERIMENT_SEED);
+        Serial.printf("[REPRO] client=%s seed=%lu epochs(local/kd/ft)=%d/%d/%d\n",
+                      CLIENT_NAME, (unsigned long)EXPERIMENT_SEED,
+                      LOCAL_EPOCHS, KD_EPOCHS, FT_EPOCHS);
         model = create_model();
         if (!model) {
             Serial.println("[FATAL] Falha ao criar modelo");
@@ -818,6 +829,15 @@ static PipelineResult run_pipeline() {
         Serial.printf("[FATAL] Sequencia invalida: ultima=%d comando=%d\n",g_last_completed_round,checkpoint_round);
         return pr;
     }
+    // Hash dos pesos ainda SEM treinamento (somente experimento novo, rodada 1).
+    if (!g_local_initialized && checkpoint_round == 1) {
+        pr.hash_init_ok = log_weight_fingerprint(*model, "INIT", &pr.hash_init);
+        if (!pr.hash_init_ok) {
+            Serial.println("[REPRO-FATAL] Nao foi possivel registrar a inicializacao.");
+            return pr;
+        }
+    }
+
     // ── Etapa 1: Treino local supervisionado (somente inicialização) ──
     RunMetrics m_local;
     if (!g_local_initialized) {
@@ -1022,6 +1042,7 @@ void loop() {
             "\"loss_local\":%.5f,\"loss_kd\":%.5f,\"loss_ft\":%.5f,"
             "\"heap_free\":%u,"
             "\"t_local_ms\":%lu,\"t_kd_ms\":%lu,\"t_ft_ms\":%lu,"
+            "\"seed\":%lu,\"fp_init\":%lu,\"fp_init_ok\":%d,"
             "\"fp_pre\":%lu,\"fp_kd\":%lu,\"fp_ft\":%lu,"
             "\"fp_pre_ok\":%d,\"fp_kd_ok\":%d,\"fp_ft_ok\":%d,"
             "\"continuity\":%d,\"checkpoint_status\":%d,\"experiment_id\":\"%s\"}",
@@ -1031,6 +1052,7 @@ void loop() {
             pr.loss_local, pr.loss_kd, pr.loss_ft,
             (unsigned)esp_get_free_heap_size(),
             pr.t_local_ms, pr.t_kd_ms, pr.t_ft_ms,
+            (unsigned long)EXPERIMENT_SEED, (unsigned long)pr.hash_init, (int)pr.hash_init_ok,
             (unsigned long)pr.hash_pre, (unsigned long)pr.hash_kd, (unsigned long)pr.hash_ft,
             (int)pr.hash_pre_ok, (int)pr.hash_kd_ok, (int)pr.hash_ft_ok,
             pr.continuity, pr.checkpoint_status, FedKDCheckpoint::experimentId());

@@ -500,6 +500,7 @@
                 "FT_LR_BIASES=0.001f",
                 "WDT_TIMEOUT_SEC=120",
                 "MQTT_KEEPALIVE=60",
+                "EXPERIMENT_SEED=33",
                 "CLIENT_ID=1",
                 "LOCAL_EPOCHS=30",
                 "KD_EPOCHS=8",

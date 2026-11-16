@@ -65,9 +65,9 @@ teacher_mlp:
 # ── Federação (parâmetros passados ao fedkd_server.py) ───────────────────────
 federation:
   sharpening: 0.7  # tau_s; <1 afia o consenso
-  experiment_id: "fedkd-experimento-10r-kd8-ft5"  # altere para cada novo experimento
+  experiment_id: "fedkd-repro-seed33"  # altere para cada novo experimento
   start_round: 1  # na retomada, use N+1 apos N confirmada em todos os ESP32
-  rounds: 10                   # null = modo contínuo; inteiro = N rounds fixos
+  rounds: 10                  # null = modo contínuo; inteiro = N rounds fixos
   timeout: 600                   # segundos de timeout esperando logits
   inter_round_s: 5.0             # intervalo entre rounds automáticos
 

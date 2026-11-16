@@ -1,0 +1,551 @@
+============================================================
+  FedKD-MR Orchestrator
+  Config: orchestrator_example.yaml
+============================================================
+  [+00:00] ✓ BLOCO5 manifest validado: D_pub=20; pesos de treino consistentes
+
+============================================================
+  FedKD-MR Orchestrator
+============================================================
+  Clientes  : 3
+  Broker    : 192.168.0.14:1883
+  ProjDir   : /home/claudio/fedkd-mr-repositorio/fedkd-mr/server
+  OutDir    : orchestrator_output
+  Fases     : [5]
+  Dry-run   : False
+  [+00:00] ✓ Fase 1 pulada — carregando backups de dataset_priv...
+  [+00:00] ✓   esp32_c1: 399 amostras do backup
+  [+00:00] ✓   esp32_c2: 390 amostras do backup
+  [+00:00] ✓   esp32_c3: 282 amostras do backup
+  [+00:00] ✓ Fase 2 pulada — usando orchestrator_output
+
+============================================================
+  Fase 5 — Iniciar fedkd_server.py
+============================================================
+  [+00:00] ✓   Iniciando: /usr/bin/python3 /home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py --host 192.168.0.14 --port 1883 --n-clients 3 --timeout 600 --temperature 2.0 --interval 5.0 --rounds 10 --experiment-id fedkd-repro-seed33 --start-round 1 --sharpening 0.7 --client-weights-json {"FedKD-ESP32-1":303,"FedKD-ESP32-2":301,"FedKD-ESP32-3":231}
+  [+00:00] ✓   fedkd_server.py PID=168114
+  [+00:00] ✓ Servidor iniciado. Ctrl+C para encerrar.
+/home/claudio/fedkd-mr-repositorio/fedkd-mr/server/fedkd_server.py:117: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  self._client = mqtt.Client(client_id="fedkd-server", clean_session=True)
+=======================================================
+  FedKD-MR — Servidor de Federação MQTT
+=======================================================
+  Broker     : 192.168.0.14:1883
+  Clientes   : 3
+  Rounds     : 10
+  Timeout    : 600s
+  Temperatura: 2.0
+  N_CLASSES  : 4
+=======================================================
+  Tópicos:
+    Recebe logits : fedkd/logits/push/<client>
+    Publica cmds  : fedkd/cmd/pull
+    Publica teacher: fedkd/teacher/pull
+=======================================================
+  Experimento: fedkd-repro-seed33 | primeira rodada: 1
+[SERVER] Conectado ao broker 192.168.0.14:1883
+
+==================================================
+[SERVER] === Round 1 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  597s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  596s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  595s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  594s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  593s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  592s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  591s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  590s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  589s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  588s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  587s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  586s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  585s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  584s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  583s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  582s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  581s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  580s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  579s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  578s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  577s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  576s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  575s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  574s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  573s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  572s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  571s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  570s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  569s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  568s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  567s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  566s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  565s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  564s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  563s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  562s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  562s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-25.941, 31.568])
+[SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  561s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  560s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  559s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  558s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  557s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  556s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  555s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  554s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  553s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  552s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  551s restantes   [SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 1/3 clientes  |  550s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-1.923, 3.264])
+[SERVER] Aguardando logits: 2/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  549s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  548s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  547s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  546s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  545s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  544s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  543s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  542s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  541s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  540s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  539s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  538s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  537s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  536s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  535s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  534s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  533s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  532s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  531s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  530s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  529s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  528s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  527s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  526s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  525s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  524s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  523s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  522s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  521s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  520s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-5.199, 3.954])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.0574  0.0180  0.9238  0.0007]
+  amostra 1: [0.0116  0.0054  0.9830  0.0000]
+  amostra 2: [0.1863  0.0416  0.7583  0.0138]
+  amostra 3: [0.0210  0.0029  0.9758  0.0003]
+  amostra 4: [0.0155  0.0092  0.9752  0.0001]
+  amostra 5: [0.0105  0.0016  0.9877  0.0001]
+  amostra 6: [0.0001  0.0000  0.9999  0.0000]
+  amostra 7: [0.0125  0.0018  0.9855  0.0002]
+  amostra 8: [0.0103  0.0024  0.9871  0.0002]
+  amostra 9: [0.0001  0.0000  0.9998  0.0001]
+  amostra 10: [0.0000  0.0000  1.0000  0.0000]
+  amostra 11: [0.0000  0.0000  1.0000  0.0000]
+  amostra 12: [0.0000  0.0000  1.0000  0.0000]
+  amostra 13: [0.0004  0.0001  0.9995  0.0000]
+  amostra 14: [0.0000  0.0000  1.0000  0.0000]
+  amostra 15: [0.0001  0.0000  0.9997  0.0002]
+  amostra 16: [0.0000  0.0000  1.0000  0.0000]
+  amostra 17: [0.0000  0.0000  0.9999  0.0000]
+  amostra 18: [0.0011  0.0003  0.9986  0.0000]
+  amostra 19: [0.0002  0.0000  0.9998  0.0001]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0201  (max=0.2299)
+  KL(FedKD-ESP32-2||teacher) = 6.2650  (max=11.2637)
+  KL(FedKD-ESP32-3||teacher) = 3.1515  (max=5.0182)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.3496
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.6695
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.7026
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.297 acc_kd=0.297 acc_ft=0.297
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.681 acc_kd=0.468 acc_ft=0.702
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.397 acc_kd=0.269 acc_ft=0.462
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 1 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 2 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-25.374, 29.792])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-1.521, 2.469])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-5.486, 2.958])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.0931  0.0247  0.8812  0.0009]
+  amostra 1: [0.0208  0.0083  0.9708  0.0000]
+  amostra 2: [0.2479  0.0494  0.6871  0.0155]
+  amostra 3: [0.0394  0.0052  0.9550  0.0003]
+  amostra 4: [0.0270  0.0135  0.9594  0.0001]
+  amostra 5: [0.0208  0.0032  0.9758  0.0002]
+  amostra 6: [0.0003  0.0000  0.9997  0.0000]
+  amostra 7: [0.0246  0.0035  0.9716  0.0003]
+  amostra 8: [0.0202  0.0046  0.9750  0.0002]
+  amostra 9: [0.0002  0.0001  0.9996  0.0001]
+  amostra 10: [0.0000  0.0000  1.0000  0.0000]
+  amostra 11: [0.0000  0.0000  1.0000  0.0000]
+  amostra 12: [0.0000  0.0000  1.0000  0.0000]
+  amostra 13: [0.0008  0.0001  0.9990  0.0001]
+  amostra 14: [0.0000  0.0000  1.0000  0.0000]
+  amostra 15: [0.0003  0.0001  0.9994  0.0003]
+  amostra 16: [0.0000  0.0000  1.0000  0.0000]
+  amostra 17: [0.0001  0.0000  0.9999  0.0000]
+  amostra 18: [0.0023  0.0006  0.9970  0.0000]
+  amostra 19: [0.0003  0.0001  0.9995  0.0001]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0289  (max=0.2907)
+  KL(FedKD-ESP32-2||teacher) = 5.1004  (max=9.2113)
+  KL(FedKD-ESP32-3||teacher) = 3.7480  (max=7.1254)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.4456
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.6057
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8644
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.297 acc_kd=0.297 acc_ft=0.297
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.702 acc_kd=0.511 acc_ft=0.723
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.462 acc_kd=0.308 acc_ft=0.487
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 2 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 3 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-24.656, 27.300])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-1.810, 3.036])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-5.840, 3.069])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.1626  0.0345  0.8014  0.0014]
+  amostra 1: [0.0381  0.0124  0.9494  0.0001]
+  amostra 2: [0.3459  0.0607  0.5747  0.0187]
+  amostra 3: [0.0824  0.0099  0.9072  0.0005]
+  amostra 4: [0.0478  0.0192  0.9328  0.0001]
+  amostra 5: [0.0458  0.0062  0.9477  0.0003]
+  amostra 6: [0.0006  0.0000  0.9993  0.0001]
+  amostra 7: [0.0541  0.0071  0.9383  0.0005]
+  amostra 8: [0.0428  0.0088  0.9480  0.0004]
+  amostra 9: [0.0005  0.0002  0.9991  0.0002]
+  amostra 10: [0.0000  0.0000  0.9999  0.0000]
+  amostra 11: [0.0000  0.0000  1.0000  0.0000]
+  amostra 12: [0.0000  0.0000  1.0000  0.0000]
+  amostra 13: [0.0016  0.0002  0.9980  0.0002]
+  amostra 14: [0.0000  0.0000  1.0000  0.0000]
+  amostra 15: [0.0005  0.0001  0.9989  0.0005]
+  amostra 16: [0.0000  0.0000  1.0000  0.0000]
+  amostra 17: [0.0002  0.0000  0.9998  0.0000]
+  amostra 18: [0.0048  0.0011  0.9940  0.0001]
+  amostra 19: [0.0006  0.0001  0.9991  0.0002]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0438  (max=0.3786)
+  KL(FedKD-ESP32-2||teacher) = 4.6023  (max=8.5412)
+  KL(FedKD-ESP32-3||teacher) = 3.2724  (max=6.5892)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.4317
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.6230
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8540
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.297 acc_kd=0.297 acc_ft=0.297
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.723 acc_kd=0.532 acc_ft=0.723
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.487 acc_kd=0.308 acc_ft=0.462
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 3 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 4 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-23.797, 23.539])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-2.191, 3.589])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.125, 3.231])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.3243  0.0496  0.6239  0.0023]
+  amostra 1: [0.0997  0.0221  0.8780  0.0002]
+  amostra 2: [0.4851  0.0723  0.4204  0.0221]
+  amostra 3: [0.2230  0.0207  0.7552  0.0011]
+  amostra 4: [0.1156  0.0320  0.8521  0.0003]
+  amostra 5: [0.1446  0.0143  0.8404  0.0008]
+  amostra 6: [0.0025  0.0001  0.9972  0.0002]
+  amostra 7: [0.1664  0.0170  0.8155  0.0011]
+  amostra 8: [0.1306  0.0198  0.8488  0.0008]
+  amostra 9: [0.0019  0.0005  0.9970  0.0006]
+  amostra 10: [0.0001  0.0000  0.9998  0.0001]
+  amostra 11: [0.0001  0.0000  0.9999  0.0000]
+  amostra 12: [0.0000  0.0000  1.0000  0.0000]
+  amostra 13: [0.0052  0.0006  0.9938  0.0005]
+  amostra 14: [0.0001  0.0000  0.9999  0.0000]
+  amostra 15: [0.0014  0.0002  0.9969  0.0014]
+  amostra 16: [0.0001  0.0000  0.9999  0.0000]
+  amostra 17: [0.0006  0.0000  0.9993  0.0001]
+  amostra 18: [0.0165  0.0025  0.9809  0.0001]
+  amostra 19: [0.0017  0.0003  0.9974  0.0006]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0730  (max=0.4523)
+  KL(FedKD-ESP32-2||teacher) = 3.9198  (max=7.6465)
+  KL(FedKD-ESP32-3||teacher) = 2.6736  (max=5.8004)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.4237
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.6406
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8440
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.297 acc_kd=0.297 acc_ft=0.538
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.723 acc_kd=0.575 acc_ft=0.745
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.462 acc_kd=0.308 acc_ft=0.474
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 4 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 5 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-23.024, 4.484])
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-2.631, 4.169])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 2/3 clientes  |  597s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.303, 3.463])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.6998  0.1125  0.1823  0.0054]
+  amostra 1: [0.5651  0.1488  0.2845  0.0015]
+  amostra 2: [0.6721  0.1020  0.1949  0.0310]
+  amostra 3: [0.6282  0.1599  0.2046  0.0073]
+  amostra 4: [0.5686  0.1452  0.2845  0.0017]
+  amostra 5: [0.5510  0.1992  0.2408  0.0091]
+  amostra 6: [0.0444  0.0087  0.9327  0.0142]
+  amostra 7: [0.5460  0.2162  0.2264  0.0113]
+  amostra 8: [0.4760  0.2535  0.2620  0.0086]
+  amostra 9: [0.0317  0.0376  0.8948  0.0359]
+  amostra 10: [0.0018  0.0014  0.9906  0.0062]
+  amostra 11: [0.0022  0.0011  0.9917  0.0050]
+  amostra 12: [0.0013  0.0009  0.9968  0.0010]
+  amostra 13: [0.0681  0.0382  0.8636  0.0301]
+  amostra 14: [0.0014  0.0008  0.9950  0.0028]
+  amostra 15: [0.0171  0.0102  0.9029  0.0698]
+  amostra 16: [0.0024  0.0017  0.9934  0.0026]
+  amostra 17: [0.0109  0.0024  0.9762  0.0104]
+  amostra 18: [0.2317  0.1213  0.6402  0.0068]
+  amostra 19: [0.0252  0.0191  0.9141  0.0416]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.1474  (max=0.7145)
+  KL(FedKD-ESP32-2||teacher) = 1.6525  (max=3.9490)
+  KL(FedKD-ESP32-3||teacher) = 1.0026  (max=2.6595)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.5572
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.7163
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8357
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.538 acc_kd=0.549 acc_ft=0.659
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.745 acc_kd=0.681 acc_ft=0.745
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.474 acc_kd=0.372 acc_ft=0.487
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 5 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 6 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-21.712, 3.427])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 1/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-3.094, 4.735])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.115, 3.850])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.7908  0.0893  0.1129  0.0069]
+  amostra 1: [0.7358  0.0869  0.1746  0.0027]
+  amostra 2: [0.7185  0.1079  0.1389  0.0347]
+  amostra 3: [0.5163  0.3530  0.1117  0.0190]
+  amostra 4: [0.7623  0.0659  0.1696  0.0022]
+  amostra 5: [0.3684  0.4913  0.1128  0.0275]
+  amostra 6: [0.0421  0.0405  0.7874  0.1300]
+  amostra 7: [0.3296  0.5473  0.0922  0.0309]
+  amostra 8: [0.2845  0.5870  0.1067  0.0217]
+  amostra 9: [0.0276  0.1500  0.5865  0.2360]
+  amostra 10: [0.0017  0.0048  0.9298  0.0637]
+  amostra 11: [0.0022  0.0044  0.9344  0.0589]
+  amostra 12: [0.0015  0.0047  0.9780  0.0158]
+  amostra 13: [0.0470  0.0807  0.6780  0.1944]
+  amostra 14: [0.0014  0.0032  0.9609  0.0345]
+  amostra 15: [0.0114  0.0206  0.5915  0.3765]
+  amostra 16: [0.0035  0.0118  0.9498  0.0348]
+  amostra 17: [0.0096  0.0077  0.8796  0.1031]
+  amostra 18: [0.2361  0.2527  0.4726  0.0386]
+  amostra 19: [0.0166  0.0338  0.6824  0.2672]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.1432  (max=0.7428)
+  KL(FedKD-ESP32-2||teacher) = 0.7986  (max=2.1976)
+  KL(FedKD-ESP32-3||teacher) = 0.4143  (max=1.2246)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.6137
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.8123
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8436
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.659 acc_kd=0.681 acc_ft=0.637
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.745 acc_kd=0.723 acc_ft=0.766
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.487 acc_kd=0.397 acc_ft=0.487
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 6 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 7 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-27.439, 1.566])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-3.607, 5.235])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 2/3 clientes  |  597s restantes   [SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.114, 4.286])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.8494  0.0635  0.0769  0.0102]
+  amostra 1: [0.8289  0.0434  0.1220  0.0057]
+  amostra 2: [0.7614  0.1002  0.0996  0.0388]
+  amostra 3: [0.4909  0.3876  0.0714  0.0502]
+  amostra 4: [0.8511  0.0300  0.1152  0.0037]
+  amostra 5: [0.3065  0.5389  0.0675  0.0871]
+  amostra 6: [0.0239  0.0462  0.2870  0.6429]
+  amostra 7: [0.2605  0.6028  0.0492  0.0875]
+  amostra 8: [0.2098  0.6772  0.0507  0.0623]
+  amostra 9: [0.0104  0.1100  0.1377  0.7419]
+  amostra 10: [0.0011  0.0058  0.4395  0.5536]
+  amostra 11: [0.0013  0.0054  0.4129  0.5804]
+  amostra 12: [0.0016  0.0112  0.6234  0.3637]
+  amostra 13: [0.0170  0.0377  0.2672  0.6780]
+  amostra 14: [0.0011  0.0051  0.5533  0.4405]
+  amostra 15: [0.0028  0.0077  0.1367  0.8528]
+  amostra 16: [0.0037  0.0282  0.4437  0.5243]
+  amostra 17: [0.0043  0.0054  0.3300  0.6603]
+  amostra 18: [0.2176  0.2148  0.3460  0.2215]
+  amostra 19: [0.0046  0.0111  0.2128  0.7715]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0894  (max=0.3943)
+  KL(FedKD-ESP32-2||teacher) = 0.2536  (max=0.7636)
+  KL(FedKD-ESP32-3||teacher) = 0.2813  (max=0.6981)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8532
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.8291
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8436
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.637 acc_kd=0.648 acc_ft=0.637
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.766 acc_kd=0.723 acc_ft=0.766
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.487 acc_kd=0.538 acc_ft=0.500
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 7 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 8 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  598s restantes   [SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-32.195, 0.115])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-4.113, 5.670])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  597s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.268, 4.728])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.8844  0.0472  0.0603  0.0080]
+  amostra 1: [0.8682  0.0255  0.1015  0.0049]
+  amostra 2: [0.8013  0.0894  0.0795  0.0297]
+  amostra 3: [0.4886  0.4112  0.0597  0.0405]
+  amostra 4: [0.8883  0.0165  0.0923  0.0029]
+  amostra 5: [0.2832  0.5867  0.0575  0.0727]
+  amostra 6: [0.0260  0.0725  0.3141  0.5874]
+  amostra 7: [0.2335  0.6588  0.0394  0.0683]
+  amostra 8: [0.1715  0.7468  0.0358  0.0460]
+  amostra 9: [0.0104  0.1712  0.1331  0.6853]
+  amostra 10: [0.0009  0.0067  0.4255  0.5669]
+  amostra 11: [0.0012  0.0071  0.3927  0.5991]
+  amostra 12: [0.0015  0.0171  0.5786  0.4027]
+  amostra 13: [0.0125  0.0326  0.2825  0.6723]
+  amostra 14: [0.0010  0.0068  0.5285  0.4637]
+  amostra 15: [0.0021  0.0074  0.1292  0.8612]
+  amostra 16: [0.0044  0.0537  0.3979  0.5441]
+  amostra 17: [0.0032  0.0054  0.3032  0.6882]
+  amostra 18: [0.2009  0.1922  0.3531  0.2538]
+  amostra 19: [0.0032  0.0085  0.2188  0.7695]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0893  (max=0.4027)
+  KL(FedKD-ESP32-2||teacher) = 0.2352  (max=0.7065)
+  KL(FedKD-ESP32-3||teacher) = 0.2387  (max=0.6785)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8607
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.8401
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8329
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.637 acc_kd=0.648 acc_ft=0.659
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.766 acc_kd=0.723 acc_ft=0.766
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.500 acc_kd=0.538 acc_ft=0.500
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 8 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 9 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-36.999, -1.323])
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-4.575, 6.051])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.421, 5.144])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.9104  0.0365  0.0467  0.0064]
+  amostra 1: [0.8961  0.0164  0.0831  0.0044]
+  amostra 2: [0.8346  0.0796  0.0630  0.0228]
+  amostra 3: [0.4929  0.4269  0.0475  0.0327]
+  amostra 4: [0.9144  0.0100  0.0730  0.0025]
+  amostra 5: [0.2679  0.6256  0.0462  0.0603]
+  amostra 6: [0.0290  0.1208  0.3295  0.5207]
+  amostra 7: [0.2147  0.7017  0.0300  0.0536]
+  amostra 8: [0.1448  0.7981  0.0239  0.0331]
+  amostra 9: [0.0105  0.2834  0.1227  0.5834]
+  amostra 10: [0.0009  0.0098  0.4258  0.5635]
+  amostra 11: [0.0011  0.0111  0.3884  0.5994]
+  amostra 12: [0.0015  0.0307  0.5492  0.4186]
+  amostra 13: [0.0095  0.0302  0.2835  0.6768]
+  amostra 14: [0.0010  0.0110  0.5206  0.4675]
+  amostra 15: [0.0017  0.0081  0.1237  0.8665]
+  amostra 16: [0.0055  0.1167  0.3615  0.5163]
+  amostra 17: [0.0026  0.0062  0.2856  0.7057]
+  amostra 18: [0.1866  0.1811  0.3422  0.2900]
+  amostra 19: [0.0023  0.0071  0.2159  0.7746]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0917  (max=0.4323)
+  KL(FedKD-ESP32-2||teacher) = 0.2217  (max=0.6152)
+  KL(FedKD-ESP32-3||teacher) = 0.2089  (max=0.6608)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8685
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.8480
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8193
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.659 acc_kd=0.659 acc_ft=0.670
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.766 acc_kd=0.723 acc_ft=0.766
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.500 acc_kd=0.526 acc_ft=0.513
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 9 salvo → metrics.csv, consensus.csv, logits/*.npy
+
+==================================================
+[SERVER] === Round 10 ===
+==================================================
+[SERVER] Comando 'start' enviado → fedkd/cmd/pull
+[SERVER] Aguardando logits: 0/3 clientes  |  600s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [SERVER] Aguardando logits: 0/3 clientes  |  599s restantes   [IDENTIDADE] FedKD-ESP32-1=MLP chip=DCE692DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-1: 20 amostras × 4 classes  (logit_range=[-41.395, -2.679])
+[SERVER] Aguardando logits: 1/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-2=CNN1D chip=90A793DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-2: 20 amostras × 4 classes  (logit_range=[-4.991, 6.382])
+[SERVER] Aguardando logits: 2/3 clientes  |  598s restantes   [IDENTIDADE] FedKD-ESP32-3=GRU chip=88BF92DF948C fw=bloco6-v1
+[SERVER] Logits de FedKD-ESP32-3: 20 amostras × 4 classes  (logit_range=[-6.559, 5.540])
+
+[SERVER] Todos os 3 clientes responderam: ['FedKD-ESP32-1', 'FedKD-ESP32-2', 'FedKD-ESP32-3']
+[SERVER] teacher_probs calculado: 20 amostras × 4 classes  (T=2.0, tau_s=0.7, n_i={'FedKD-ESP32-1': 303, 'FedKD-ESP32-2': 301, 'FedKD-ESP32-3': 231})
+  amostra 0: [0.9290  0.0286  0.0371  0.0054]
+  amostra 1: [0.9140  0.0110  0.0706  0.0044]
+  amostra 2: [0.8614  0.0703  0.0504  0.0178]
+  amostra 3: [0.4942  0.4382  0.0391  0.0285]
+  amostra 4: [0.9319  0.0064  0.0593  0.0024]
+  amostra 5: [0.2546  0.6521  0.0388  0.0545]
+  amostra 6: [0.0282  0.1770  0.3311  0.4637]
+  amostra 7: [0.1944  0.7375  0.0234  0.0446]
+  amostra 8: [0.1229  0.8340  0.0169  0.0262]
+  amostra 9: [0.0093  0.3954  0.1085  0.4869]
+  amostra 10: [0.0007  0.0129  0.4266  0.5597]
+  amostra 11: [0.0010  0.0154  0.3874  0.5962]
+  amostra 12: [0.0013  0.0477  0.5265  0.4244]
+  amostra 13: [0.0067  0.0257  0.2758  0.6919]
+  amostra 14: [0.0009  0.0155  0.5160  0.4676]
+  amostra 15: [0.0013  0.0082  0.1176  0.8728]
+  amostra 16: [0.0056  0.2127  0.3161  0.4656]
+  amostra 17: [0.0018  0.0067  0.2626  0.7289]
+  amostra 18: [0.1614  0.1608  0.3279  0.3499]
+  amostra 19: [0.0015  0.0057  0.2095  0.7833]
+[SERVER] teacher_probs publicado → fedkd/teacher/pull  (336 bytes)
+[SERVER] Calculando métricas de consenso…
+  KL(FedKD-ESP32-1||teacher) = 0.0934  (max=0.3785)
+  KL(FedKD-ESP32-2||teacher) = 0.2166  (max=0.6042)
+  KL(FedKD-ESP32-3||teacher) = 0.2053  (max=0.6692)
+  cosine(FedKD-ESP32-1, FedKD-ESP32-2) = 0.8798
+  cosine(FedKD-ESP32-1, FedKD-ESP32-3) = 0.8470
+  cosine(FedKD-ESP32-2, FedKD-ESP32-3) = 0.8057
+[SERVER] Done de FedKD-ESP32-1: acc_local=0.670 acc_kd=0.670 acc_ft=0.659
+[SERVER] Done de FedKD-ESP32-3: acc_local=0.766 acc_kd=0.681 acc_ft=0.766
+[SERVER] Done de FedKD-ESP32-2: acc_local=0.513 acc_kd=0.538 acc_ft=0.551
+[SERVER] Todos os clientes confirmaram 'done'.
+[LOG] Round 10 salvo → metrics.csv, consensus.csv, logits/*.npy
+[SERVER] Desconectado do broker.
+
+============================================================
+  Orquestrador concluído
+============================================================

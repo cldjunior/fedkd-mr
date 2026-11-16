@@ -1,0 +1,2 @@
+round,ts,n_clients,n_pub,entropy_mean,entropy_min,entropy_max,kl_mean,kl_max,cosine_mean,cosine_min,bytes_logits,bytes_teacher,t_round_ms
+1,2026-11-16T09:41:34,3,20,1.03446,0.64269,1.31939,0.15644,0.26187,0.76302,0.72140,960,320,117636
